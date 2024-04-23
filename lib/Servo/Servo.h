@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "FashionStar_UartServoProtocol.h" // 串口总线舵机通信协议
 #include "FashionStar_UartServo.h"         // 串口总线舵机SDK
+#include "TCPConfig.h"
+
 
 /*********************Num of Servo*********************/
 #define G1H 1
@@ -37,23 +39,32 @@
 #define defaultServoID3 3
 // ..Wanning: The default<xxx> should not used in the original code
 
+/**********************Other**********************/
+#define defaultAngle 0
+#define defaultTime 1000
+#define NumofLeg 6
+
 class LegConfig
 {
 public:
     FSUS_Protocol protocol; // 舵机串口通信协议
-    FSUS_Servo hipServo;      // 舵机对象
-    FSUS_Servo kneeServo;      // 舵机对象
-    FSUS_Servo ankleServo;      // 舵机对象
+    FSUS_Servo hipServo;    // 舵机对象
+    FSUS_Servo kneeServo;   // 舵机对象
+    FSUS_Servo ankleServo;  // 舵机对象
     LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
     ~LegConfig();
 
-    uint8_t hipServoID;  // hip髋关节舵机ID1
+    uint8_t hipServoID;   // hip髋关节舵机ID1
     uint8_t kneeServoID;  // knee膝关节舵机ID2
     uint8_t ankleServoID; // ankle舵机ID3
 
     void LegInit(); // 初始化舵机
     void LegInit(FSUS_Protocol INput);
     void LegInit(FSUS_Protocol INputPol, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
-    void LegMove(float targetangle, uint8_t runTime); // 移动舵机
+    void LegSetAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime); // 移动舵机
+    uint8_t LegPing();
+
+    uint8_t ThreeBool2Bin(bool hipServo, bool kneeServo, bool ankleServo);
+    void bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool &ankleServo);
 };
 #endif

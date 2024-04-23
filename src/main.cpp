@@ -17,7 +17,7 @@
 WiFiConfig WLAN;
 TCPConfig MUMU;
 TCPConfig JIAHONG;
-LegConfig Test;
+// LegConfig Test;
 
 FSUS_Protocol PL1((&Serial1, 115200));
 // FSUS_Protocol Le;
@@ -33,11 +33,12 @@ void setup()
     WLAN.OTAconfig(); // 初始化OTA
 
     // 初始化机械臂协议
-    Test.protocol();
+    // Test.protocol();
 
     // 生成一个消息队列，将对象MUMU和JIAHONG的指针传递给消息队列
     MUMU.TCPQueue = xQueueCreate(1, sizeof(TCPConfig *));
     JIAHONG.TCPQueue = xQueueCreate(1, sizeof(TCPConfig *));
+    MUMU.LegQueue = xQueueCreate(NumofLeg, sizeof(LegConfig *));
     xQueueSend(MUMU.TCPQueue, &JIAHONG, 0);
     xQueueSend(JIAHONG.TCPQueue, &MUMU, 0);
 

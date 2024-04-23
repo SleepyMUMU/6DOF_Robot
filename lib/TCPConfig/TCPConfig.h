@@ -40,7 +40,7 @@ public:
     TaskHandle_t Server_TaskHandle = NULL;
     TaskHandle_t RunTime_TaskHandle = NULL;
     QueueHandle_t TCPQueue;
-    
+    QueueHandle_t LegQueue;
     TCPConfig();
     bool TCPInit();
     bool TCPInit(IPAddress serverIP, u16_t serverPort);
