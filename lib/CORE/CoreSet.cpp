@@ -33,8 +33,7 @@ void tcpRunTimeEnvTask(void *pvParam)
             else if (Target->ReceiveData == "sendmsg")  
             {
                 Target->TCP.println("[I][RunTime]Send Message To Other Client.");
-                
-
+                xQueueReceive(Target->TCPQueue, &Target, 0);
             }
             
             //ShowAllTask ... Todo

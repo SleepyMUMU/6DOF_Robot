@@ -30,7 +30,7 @@
 class TCPConfig
 {
 public:
-    QueueHandle_t TCPQueue;
+
     WiFiClient TCP;
     IPAddress serverIP;
     u16_t serverPort;
@@ -39,7 +39,8 @@ public:
     TaskHandle_t Init_TaskHandle = NULL;
     TaskHandle_t Server_TaskHandle = NULL;
     TaskHandle_t RunTime_TaskHandle = NULL;
-
+    QueueHandle_t TCPQueue;
+    
     TCPConfig();
     bool TCPInit();
     bool TCPInit(IPAddress serverIP, u16_t serverPort);
