@@ -5,13 +5,7 @@
 #include <FashionStar_UartServo.h>
 #include <FashionStar_UartServoProtocol.h>
 
-class SportCalculate
-{
-public:
-    SportCalculate();
-    ~SportCalculate();
-    void ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
-    void InverseKinematics(float x, float y, float z, FSUS_SERVO_ANGLE_T &hipAngle, FSUS_SERVO_ANGLE_T &kneeAngle, FSUS_SERVO_ANGLE_T &ankleAngle); // 逆运动学逆解
-};
+void ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
+void InverseKinematics(float x, float y, float z, FSUS_SERVO_ANGLE_T &hipAngle, FSUS_SERVO_ANGLE_T &kneeAngle, FSUS_SERVO_ANGLE_T &ankleAngle); // 逆运动学逆解
 
-#endif // DEBUG
+#endif                                                                                                                                          // DEBUG

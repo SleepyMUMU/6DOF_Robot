@@ -2,7 +2,7 @@
 
 
 /*正运动学解算*/
-void SportCalculate::ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z)
+void ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z)
 {
     // 机械臂的三个关节的长度
     float L1 = 0.1;
@@ -20,7 +20,7 @@ void SportCalculate::ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_A
     z = -L3 * sin(kneeAngleRad + ankleAngleRad) - L2 * sin(kneeAngleRad);
 }
 /*运动学逆解*/
-void SportCalculate::InverseKinematics(float x, float y, float z, FSUS_SERVO_ANGLE_T &hipAngle, FSUS_SERVO_ANGLE_T &kneeAngle, FSUS_SERVO_ANGLE_T &ankleAngle)
+void InverseKinematics(float x, float y, float z, FSUS_SERVO_ANGLE_T &hipAngle, FSUS_SERVO_ANGLE_T &kneeAngle, FSUS_SERVO_ANGLE_T &ankleAngle)
 {
     // 机械臂的三个关节的长度
     float L1 = 0.1;

@@ -75,6 +75,14 @@ void FSUS_Protocol::init(HardwareSerial *serial, uint32_t baudrate)
     this->serial = serial;
 }
 
+void FSUS_Protocol::init(HardwareSerial *serial, uint32_t baudrate, uint8_t rxPin, uint8_t txPin)
+{
+
+    this->baudrate = baudrate;
+    uint32_t config = SERIAL_8N1;
+    serial->begin(baudrate, SERIAL_8N1, rxPin, txPin);
+    this->serial = serial;
+}
 // 加工并发送请求数据包
 void FSUS_Protocol::sendPack()
 {

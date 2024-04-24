@@ -1,4 +1,3 @@
-
 #ifndef _SERVO_H_
 #define _SERVO_H_
 #include <Arduino.h>
@@ -8,7 +7,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
-#include <SportCalculate.h>
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -71,7 +69,6 @@
 #define defaultAngle 0
 #define defaultTime 1000
 
-
 class LegConfig
 {
 public:
@@ -79,7 +76,8 @@ public:
     FSUS_Servo hipServo;    // 舵机对象
     FSUS_Servo kneeServo;   // 舵机对象
     FSUS_Servo ankleServo;  // 舵机对象
-                            // LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
+
+    FSUS_SERVO_ANGLE_T hipAngle, kneeAngle, ankleAngle;
     LegConfig();
     ~LegConfig(); // 暂不考虑释放机械臂对象的情况，析构函数留空
 
@@ -101,14 +99,11 @@ public:
 
     uint8_t ThreeBool2Bin(bool hipServo, bool kneeServo, bool ankleServo);
     void bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool &ankleServo);
+    void ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
+    void InverseKinematics(float x, float y, float z, FSUS_SERVO_ANGLE_T &hipAngle, FSUS_SERVO_ANGLE_T &kneeAngle, FSUS_SERVO_ANGLE_T &ankleAngle); // 逆运动学逆解
+    void userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z);                                                                // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
 };
 
-class TextLeg
-{
-public:
-
-    void userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z); //选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
-};
 u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg];
 

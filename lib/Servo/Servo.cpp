@@ -8,7 +8,7 @@
 //      this->ServoID = ServoID;     // 舵机ID
 //      this->ServoID2 = ServoID2;   // 舵机ID2
 //      this->ServoID3 = ServoID3;   // 舵机ID3
-//  }
+
 
 LegConfig::LegConfig()
 {
@@ -92,6 +92,41 @@ void LegConfig::bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool
     ankleServo = bin & 0x01;
 }
 
+void LegConfig::ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z)
+{
+    // 机械臂的三个关节的长度
+    float L1 = 0.1;
+    float L2 = 0.1;
+    float L3 = 0.1;
+
+    // 弧度制
+    float hipAngleRad = hipAngle * PI / 180;
+    float kneeAngleRad = kneeAngle * PI / 180;
+    float ankleAngleRad = ankleAngle * PI / 180;
+
+    // 机械臂的正运动学解算
+    x = L1 * cos(hipAngleRad) + L2 * cos(kneeAngleRad) * cos(hipAngleRad) + L3 * cos(kneeAngleRad + ankleAngleRad) * cos(hipAngleRad);
+    y = L1 * sin(hipAngleRad) + L2 * sin(kneeAngleRad) * sin(hipAngleRad) + L3 * sin(kneeAngleRad + ankleAngleRad) * sin(hipAngleRad);
+    z = -L3 * sin(kneeAngleRad + ankleAngleRad) - L2 * sin(kneeAngleRad);
+}
+
+/*运动学逆解*/
+void LegConfig::InverseKinematics(float x, float y, float z, FSUS_SERVO_ANGLE_T &hipAngle, FSUS_SERVO_ANGLE_T &kneeAngle, FSUS_SERVO_ANGLE_T &ankleAngle)
+{
+    // 机械臂的三个关节的长度
+    float L1 = 0.1;
+    float L2 = 0.1;
+    float L3 = 0.1;
+
+    // 机械臂的逆运动学解算
+    hipAngle = atan2(y, x) * 180 / PI;
+    float f1 = x * cos(hipAngle) +y * sin(hipAngle);
+    float f2 = z;
+    float temp = f1 - L1;
+    kneeAngle = atan2(temp,f2) - asin(pow(temp, 2) + pow(f1, 2) - pow(L3, 2) - pow(L2, 2)) / (2 * L2 * sqrt(pow((f1-L2), 2) + pow(f2, 2))) * 180 / PI;
+    ankleAngle = acos((pow(temp, 2) + pow(f2, 2) - pow(L3, 2) - pow(L2, 2))/(2 * L2 * L3)) * 180 / PI;
+}
+
 // to be continued
 // void LegConfig::LegInit(FSUS_Protocol INput)
 // {
@@ -150,26 +185,22 @@ void LegPing_Task(void *pvParameters)
     }
 }
 
-
-void TextLeg::userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z)
+void LegConfig::userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z)
 {
-    SportCalculate::InverseKinematicsResult result = SportCalculate::calculateInverseKinematics(x, y, z);
-    Leg->LegSetHipAngle(result.hipAngle, 2);
-    Leg->LegSetKneeAngle(result.kneeAngle, 2);
-    Leg->LegSetAnkleAngle(result.ankleAngle, 2);
+    InverseKinematics(x, y, z, this->hipAngle, this->kneeAngle, this->ankleAngle);
+
     switch (jointNum)
     {
     case 1:
+        Leg->LegSetHipAngle(hipAngle, 2);
 
-        Leg->LegSetHipAngle(, 2);
         break;
     case 2:
+        Leg->LegSetKneeAngle(kneeAngle, 2);
 
-
-        Leg->LegSetKneeAngle(, 2);
         break;
     case 3:
-        Leg->LegSetAnkleAngle(, 2);
+        Leg->LegSetAnkleAngle(ankleAngle, 2);
         break;
     default:
         break;

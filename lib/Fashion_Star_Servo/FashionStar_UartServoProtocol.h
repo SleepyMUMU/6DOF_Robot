@@ -266,6 +266,7 @@ public:
     void init(); // 资源初始化
     void init(uint32_t baudrate);
     void init(HardwareSerial * serial, uint32_t baudrate);
+    void init(HardwareSerial * serial, uint32_t baudrate,uint8_t rxPin,uint8_t txPin);
     //串口总线舵机底层的通信协议相关的函数
     //加工并发送请求数据包
     void sendPack();
