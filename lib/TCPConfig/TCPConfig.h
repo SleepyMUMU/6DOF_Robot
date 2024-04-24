@@ -18,11 +18,11 @@
     } // MUMU服务器IP
 #define JIAHONGServerIP   \
     {                     \
-        192, 168, 31, 118 \
+        10, 3, 45, 69 \
     } // JIAHONG服务器IP
 
 #define MUMUServerPort 2566         // MUMU服务器端口
-#define JIAHONGServerPort 2577      // JIAHONG服务器端口
+#define JIAHONGServerPort 2345      // JIAHONG服务器端口
 #define defaultServerPort 2566      // 默认服务器端口
 #define defaultServerName "Unknown" // 默认服务器名称
 #define FlushTime 1000              // 默认刷新时间
@@ -30,7 +30,6 @@
 class TCPConfig
 {
 public:
-
     WiFiClient TCP;
     IPAddress serverIP;
     u16_t serverPort;
@@ -39,9 +38,13 @@ public:
     TaskHandle_t Init_TaskHandle = NULL;
     TaskHandle_t Server_TaskHandle = NULL;
     TaskHandle_t RunTime_TaskHandle = NULL;
+    TaskHandle_t Terminal_TaskHandle = NULL;
+    TaskHandle_t TaskList[NumofTask];
+    u_int16_t RunningNum_Task = 0;
     QueueHandle_t TCPQueue;
     QueueHandle_t LegQueue;
     TCPConfig();
+    bool truncateStream = false;    
     bool TCPInit();
     bool TCPInit(IPAddress serverIP, u16_t serverPort);
     // void TCPInit_Task(void *pvParam);   // Init By Task

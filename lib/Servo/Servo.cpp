@@ -9,6 +9,9 @@
 //      this->ServoID2 = ServoID2;   // 舵机ID2
 //      this->ServoID3 = ServoID3;   // 舵机ID3
 //  }
+LegConfig::LegConfig()
+{
+}
 
 void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID)
 {
@@ -61,9 +64,8 @@ void LegConfig::LegInit(FSUS_Protocol INput)
 void LegPing_Task(void *pvParameters)
 {
     TCPConfig *COM = (TCPConfig *)pvParameters;
-    while (1)
+
+    while (true)
     {
-        
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }

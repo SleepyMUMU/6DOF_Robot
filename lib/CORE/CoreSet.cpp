@@ -3,8 +3,8 @@
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
 
-// #define CONFIG_FREERTOS_USE_TRACE_FACILITY
-// #define configUSE_TRACE_FACILITY 1
+#define CONFIG_FREERTOS_USE_TRACE_FACILITY
+#define configUSE_TRACE_FACILITY 1
 
 void coreSetEnable()
 {
@@ -21,39 +21,149 @@ void tcpRunTimeEnvTask(void *pvParam)
     TCPConfig *Target = (TCPConfig *)pvParam; // 接收对应TCPConfig对象
     while (true)
     {
-        if (Target->ReceiveData.length() > 0)
+        if (!Target->truncateStream)
         {
-            if (Target->ReceiveData == "ping")
+            /* code */
+
+            if (Target->ReceiveData.length() > 0)
             {
-                Target->TCP.println("[I][RunTime]Ping Test.");
-                xTaskCreate(RobotPingTest, "RobotPingTest", 4096, &(Target->TCP), 1, NULL);
+                if (Target->ReceiveData == "ping")
+                {
+                    Target->TCP.println("[I][RunTime]Ping Test.");
+
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(RobotPingTest, "RobotPingTest", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                }
+                //...在这写功能逻辑
+                else if (Target->ReceiveData == "showtask")
+                {
+                    Target->TCP.println("[I][RunTime]Show All Task.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(showTask, "ShowAllTask", 4096, Target, 1, NULL);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                }
+
+                else if (Target->ReceiveData == "sendmsg")
+                {
+                    Target->TCP.println("[I][RunTime]Send Message To Other Client.");
+
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(tcpCom_Task, "tcpCom_Task", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
+                else if (Target->ReceiveData == "restart")
+                {
+                    Target->TCP.println("[I][RunTime]Restarting....");
+
+                    esp_restart();
+                }
+
+                // ShowAllTask ... Todo
+                // else if (Target->ReceiveData == "showTask")
+                // {
+                //     Target->TCP.println("[I][RunTime]Show All Task.");
+                //     xTaskCreate(showAllTask, "ShowAllTask", 4096, &(Target->TCP), 1, NULL);
+                // }
+                else
+                {
+                    Target->TCP.printf("[E][RunTime]Unknown Command:%s\n", Target->ReceiveData.c_str());
+                }
+                Target->ReceiveData = "";
             }
-            //...在这写功能逻辑
-            
-            else if (Target->ReceiveData == "sendmsg")  
-            {
-                Target->TCP.println("[I][RunTime]Send Message To Other Client.");
-                xQueueReceive(Target->TCPQueue, &Target, 0);
-            }
-            
-            //ShowAllTask ... Todo
-            // else if (Target->ReceiveData == "showTask")
-            // {
-            //     Target->TCP.println("[I][RunTime]Show All Task.");
-            //     xTaskCreate(showAllTask, "ShowAllTask", 4096, NULL, 1, NULL);
-            // }
-            else
-            {
-                Target->TCP.println("[E][RunTime]Unknown Command.");
-            }
-            Target->ReceiveData = "";
         }
         vTaskSuspend(NULL);
         vTaskDelay(1);
     }
 }
+void tcpCom_Task(void *pvParam)
+{
+    TCPConfig *Target = (TCPConfig *)pvParam;
+    TCPConfig *COMTarget = NULL;
+    xQueueReceive(Target->TCPQueue, &COMTarget, 0);
+    if (COMTarget == NULL)
+    {
+        Target->TCP.printf("[E][COM]No COM Target.\n");
+        vTaskSuspend(NULL);
+    }
+    else
+    {
+        Target->TCP.printf("[I][COM]COM Target:%s\n", COMTarget->serverName.c_str());
+        if (COMTarget->TCP.connected())
+        {
+            Target->TCP.printf("[I][COM]Connected to %s\n", COMTarget->serverName.c_str());
+        }
+        else
+        {
+            Target->TCP.printf("[E][COM]Connect to %s failed.\n", COMTarget->serverName.c_str());
+            vTaskSuspend(NULL);
+        }
+    }
 
-// 显示正在运行的任务
+    while (true)
+    {
+
+        if (Target->ReceiveData.length() > 0)
+        {
+
+            Target->TCP.printf("[I][COM]Send Message:%s\n", Target->ReceiveData.c_str());
+            COMTarget->TCP.printf("[I][Message]%s say: %s", Target->serverName.c_str(), Target->ReceiveData);
+            Target->ReceiveData = "";
+            // to do ...
+        }
+
+        vTaskDelay(1);
+    }
+}
+
+size_t TaskHindBind(TaskHandle_t *pxCreatedTask, void *pvParam) // 查询是否有任务，有则返回任务序号，无则添加任务
+{
+    TCPConfig *Target = (TCPConfig *)pvParam;
+    bool flag = false; // 任务是否已经存在
+    for (size_t i = 0; i < Target->RunningNum_Task; i++)
+    {
+        if (Target->TaskList[i] == *pxCreatedTask)
+        {
+            flag = true;
+            return i;
+            break;
+        }
+    }
+    if (!flag)
+    {
+        Target->TaskList[Target->RunningNum_Task] = *pxCreatedTask;
+        Target->RunningNum_Task++;
+    }
+}
+
+void tcpRunTimeEnvTaskCrtl(void *pvParam)
+{
+    TCPConfig *Target = (TCPConfig *)pvParam;
+    while (true)
+    {
+        if (Target->ReceiveData == "exit")
+        {
+            if (Target->Terminal_TaskHandle != NULL && Target->Terminal_TaskHandle != Target->RunTime_TaskHandle)
+            {
+                Target->TCP.printf("[I][RunTime]Task %s is Exit.\n", pcTaskGetTaskName(Target->Terminal_TaskHandle));
+                vTaskSuspend(Target->Terminal_TaskHandle);
+                Target->Terminal_TaskHandle = NULL;
+                Target->truncateStream = false;
+            }
+            else
+            {
+                Target->TCP.println("[E][RunTime]No User Task is Running.");
+                Target->truncateStream = false;
+            }
+        }
+    }
+}
+
+// 显示正在运行的任务状态
 bool showStateofRunningTask(TaskHandle_t TaskHandle, Stream *stream)
 {
 
@@ -97,34 +207,24 @@ bool showStateofRunningTask(TaskHandle_t TaskHandle, Stream *stream)
 
 void RobotPingTest(void *pvParam)
 {
-    Stream *stream = (Stream *)pvParam;
+    TCPConfig *Target = (TCPConfig *)pvParam;
+    Stream *stream = &Target->TCP;
     DebugPrintTest(stream);
-    vTaskDelete(NULL);
+
+    Target->Terminal_TaskHandle = NULL;
+    vTaskSuspend(NULL);
 }
 
 // To Fix up
-//  void showAllTask(void *pvParam)
-//  {
-//      Stream *stream = (Stream *)pvParam;
-//      TaskHandle_t *TaskList;                                            // 任务列表
-//      uint8_t TaskNum = uxTaskGetNumberOfTasks();                        // 获取任务数量
-//      TaskList = (TaskHandle_t *)malloc(TaskNum * sizeof(TaskHandle_t)); // 申请内存
-//      if (TaskList == NULL)                                              // 内存申请失败
-//      {
-//          stream->println("[E][Show Task]TaskList malloc failed.");
-//          vTaskDelete(NULL);
-//      }
-//      else
-//      {
-//          TaskNum = uxTaskGetSystemState((TaskStatus_t *)TaskList, TaskNum, NULL);
-//          stream->printf("**************Task List**************\n");
-//          stream->println("Ser.\tTaskName\tHandle");
-//          for (uint8_t i = 0; i < TaskNum; i++)
-//          {
-//              stream->printf("%d\t%s\t%p\n", i, pcTaskGetTaskName(TaskList[i]), TaskList[i]);
-//          }
-//          stream->printf("[I][Task]TaskNum:%d\n", TaskNum);
-//          free(TaskList);
-//      }
-//      vTaskDelete(NULL);
-//  }
+void showTask(void *pvParam)
+{
+    TCPConfig *Target = (TCPConfig *)pvParam;
+    Stream *stream = &Target->TCP;
+
+    for (size_t i = 0; i < Target->RunningNum_Task; i++)
+    {
+        showStateofRunningTask(Target->TaskList[i], stream);
+    }
+    Target->Terminal_TaskHandle = NULL;
+    vTaskSuspend(NULL);
+}

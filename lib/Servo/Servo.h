@@ -6,7 +6,6 @@
 #include "FashionStar_UartServo.h"         // 串口总线舵机SDK
 #include "TCPConfig.h"
 
-
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -51,9 +50,9 @@ public:
     FSUS_Servo hipServo;    // 舵机对象
     FSUS_Servo kneeServo;   // 舵机对象
     FSUS_Servo ankleServo;  // 舵机对象
-    LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
-    ~LegConfig();
-
+    // LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
+    //~LegConfig();
+    LegConfig();
     uint8_t hipServoID;   // hip髋关节舵机ID1
     uint8_t kneeServoID;  // knee膝关节舵机ID2
     uint8_t ankleServoID; // ankle舵机ID3
