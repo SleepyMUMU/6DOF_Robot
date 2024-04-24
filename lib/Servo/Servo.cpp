@@ -9,20 +9,43 @@
 //      this->ServoID2 = ServoID2;   // 舵机ID2
 //      this->ServoID3 = ServoID3;   // 舵机ID3
 //  }
-// LegConfig::LegConfig()
-// {
-// }
+
+LegConfig::LegConfig()
+{
+}
+LegConfig::~LegConfig()
+{
+}
 
 void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID)
 {
-    this->hipServoID = hipServoID;     // 传入Hip髋关节舵机ID1
-    this->kneeServoID = kneeServoID;   // 传入Knee膝关节舵机ID2
-    this->ankleServoID = ankleServoID; // 传入Ankle踝关节舵机ID3
-
-    this->protocol = INputPol;                                  // 初始化舵机串口通信协议
-    this->hipServo.init(this->hipServoID, &this->protocol);     // 初始化hip髋关节舵机
-    this->kneeServo.init(this->kneeServoID, &this->protocol);   // 初始化knee膝关节舵机
-    this->ankleServo.init(this->ankleServoID, &this->protocol); // 初始化ankle踝关节舵机
+    this->hipServoID = hipServoID;                                             // 传入Hip髋关节舵机ID1
+    this->kneeServoID = kneeServoID;                                           // 传入Knee膝关节舵机ID2
+    this->ankleServoID = ankleServoID;                                         // 传入Ankle踝关节舵机ID3
+    this->LegName = String(defaultLegName + String("#") + int(AddedNumofLeg)); // 传入LegName
+    this->protocol = INputPol;                                                 // 初始化舵机串口通信协议
+    this->hipServo.init(this->hipServoID, &this->protocol);                    // 初始化hip髋关节舵机
+    this->kneeServo.init(this->kneeServoID, &this->protocol);                  // 初始化knee膝关节舵机
+    this->ankleServo.init(this->ankleServoID, &this->protocol);                // 初始化ankle踝关节舵机
+    LegQueue[AddedNumofLeg] = xQueueCreate(1, sizeof(LegConfig *));            // 创建一个消息队列
+    LegConfig *LegPointer = this;                                              // 将LegConfig对象的指针传递给消息队列
+    xQueueSend(LegQueue[AddedNumofLeg], &LegPointer, portMAX_DELAY);           // 发送消息队列
+    AddedNumofLeg++;                                                           // 增加机械臂数量
+}
+void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID, String LegName)
+{
+    this->hipServoID = hipServoID;                                   // 传入Hip髋关节舵机ID1
+    this->kneeServoID = kneeServoID;                                 // 传入Knee膝关节舵机ID2
+    this->ankleServoID = ankleServoID;                               // 传入Ankle踝关节舵机ID3
+    this->LegName = LegName;                                         // 传入LegName
+    this->protocol = INputPol;                                       // 初始化舵机串口通信协议
+    this->hipServo.init(this->hipServoID, &this->protocol);          // 初始化hip髋关节舵机
+    this->kneeServo.init(this->kneeServoID, &this->protocol);        // 初始化knee膝关节舵机
+    this->ankleServo.init(this->ankleServoID, &this->protocol);      // 初始化ankle踝关节舵机
+    LegQueue[AddedNumofLeg] = xQueueCreate(1, sizeof(LegConfig *));  // 创建一个消息队列
+    LegConfig *LegPointer = this;                                    // 将LegConfig对象的指针传递给消息队列
+    xQueueSend(LegQueue[AddedNumofLeg], &LegPointer, portMAX_DELAY); // 发送消息队列
+    AddedNumofLeg++;
 }
 
 void LegConfig::LegSetHipAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
@@ -70,13 +93,13 @@ void LegConfig::bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool
 }
 
 // to be continued
-void LegConfig::LegInit(FSUS_Protocol INput)
-{
-    this->protocol = INput; // 初始化舵机串口通信协议
-    // this->Servo1.init(this->ServoID, &this->protocol);  // 初始化舵机1
-    // this->Servo2.init(this->ServoID2, &this->protocol); // 初始化舵机2
-    // this->Servo3.init(this->ServoID3, &this->protocol); // 初始化舵机3
-}
+// void LegConfig::LegInit(FSUS_Protocol INput)
+// {
+//     this->protocol = INput; // 初始化舵机串口通信协议
+//     // this->Servo1.init(this->ServoID, &this->protocol);  // 初始化舵机1
+//     // this->Servo2.init(this->ServoID2, &this->protocol); // 初始化舵机2
+//     // this->Servo3.init(this->ServoID3, &this->protocol); // 初始化舵机3
+// }
 
 void LegPing_Task(void *pvParameters)
 {

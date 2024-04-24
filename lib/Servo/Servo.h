@@ -39,7 +39,9 @@
 #define defaultServoID 1
 #define defaultServoID2 2
 #define defaultServoID3 3
-// ..Wanning: The default<xxx> should not used in the original code
+#define numofLeg 6
+#define defaultLegName "UnNameLeg"
+// ..Wanning: These default<xxx> should NOT used in the original code
 /**********************Other**********************/
 // 设置舵机原始角度
 #define defaultLeg1HipAngle 6.6    // 舵机原始角度
@@ -68,7 +70,7 @@
 
 #define defaultAngle 0
 #define defaultTime 1000
-#define NumofLeg 6
+
 
 class LegConfig
 {
@@ -77,16 +79,20 @@ public:
     FSUS_Servo hipServo;    // 舵机对象
     FSUS_Servo kneeServo;   // 舵机对象
     FSUS_Servo ankleServo;  // 舵机对象
-    // LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
-    // ~LegConfig();
+                            // LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
+    LegConfig();
+    ~LegConfig(); // 暂不考虑释放机械臂对象的情况，析构函数留空
 
     uint8_t hipServoID;   // hip髋关节舵机ID1
     uint8_t kneeServoID;  // knee膝关节舵机ID2
     uint8_t ankleServoID; // ankle舵机ID3
 
-    void LegInit(); // 初始化舵机
-    void LegInit(FSUS_Protocol INput);
+    String LegName;
+
+    // void LegInit(); // 初始化舵机
+    // void LegInit(FSUS_Protocol INput);
     void LegInit(FSUS_Protocol INputPol, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
+    void LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID, String LegName);
     // void LegSetAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime);                                                                      // 移动舵机
     void LegSetHipAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime);
     void LegSetKneeAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime);
@@ -103,5 +109,7 @@ public:
 
     void userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z); //选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
 };
+u8_t AddedNumofLeg = 0;
+QueueHandle_t LegQueue[numofLeg];
 
 #endif
