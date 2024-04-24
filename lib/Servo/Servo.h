@@ -8,6 +8,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
+#include <SportCalculate.h>
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -76,8 +77,8 @@ public:
     FSUS_Servo hipServo;    // 舵机对象
     FSUS_Servo kneeServo;   // 舵机对象
     FSUS_Servo ankleServo;  // 舵机对象
-    LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
-    ~LegConfig();
+    // LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
+    // ~LegConfig();
 
     uint8_t hipServoID;   // hip髋关节舵机ID1
     uint8_t kneeServoID;  // knee膝关节舵机ID2
@@ -95,12 +96,12 @@ public:
     uint8_t ThreeBool2Bin(bool hipServo, bool kneeServo, bool ankleServo);
     void bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool &ankleServo);
 };
-LegConfig Leg1;
-LegConfig Leg2;
-LegConfig Leg3;
-LegConfig Leg4;
-LegConfig Leg5;
-LegConfig Leg6;
 
-Leg1.queue = xQueueCreate(NumofLeg, sizeof(LegConfig *));
+class TextLeg
+{
+public:
+
+    void userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z); //选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
+};
+
 #endif

@@ -9,9 +9,9 @@
 //      this->ServoID2 = ServoID2;   // 舵机ID2
 //      this->ServoID3 = ServoID3;   // 舵机ID3
 //  }
-LegConfig::LegConfig()
-{
-}
+// LegConfig::LegConfig()
+// {
+// }
 
 void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID)
 {
@@ -27,20 +27,20 @@ void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t knee
 
 void LegConfig::LegSetHipAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
 {
-    this->hipServo.setAngle(targetangle, runTime);     // 移动hip髋关节舵机
+    this->hipServo.setAngle(targetangle, runTime); // 移动hip髋关节舵机
     delay(runTime);                                // 延时
 }
 
-void LegConfig::LegSetKneeAngle( FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
+void LegConfig::LegSetKneeAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
 {
-    this->kneeServo.setAngle(targetangle, runTime);   // 移动knee膝关节舵机
-    delay(runTime);                                // 延时
+    this->kneeServo.setAngle(targetangle, runTime); // 移动knee膝关节舵机
+    delay(runTime);                                 // 延时
 }
 
 void LegConfig::LegSetAnkleAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
 {
     this->ankleServo.setAngle(targetangle, runTime); // 移动ankle踝关节舵机
-    delay(runTime);                                // 延时
+    delay(runTime);                                  // 延时
 }
 // void LegConfig::LegSetAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
 // {
@@ -80,7 +80,7 @@ void LegConfig::LegInit(FSUS_Protocol INput)
 
 void LegPing_Task(void *pvParameters)
 {
-    LegConfig *Target = (LegConfig *)pvParameters;// 接收对应LegConfig对象
+    LegConfig *Target = (LegConfig *)pvParameters; // 接收对应LegConfig对象
     while (1)
     {
         uint8_t pingResult = Target->LegPing();
@@ -113,7 +113,7 @@ void LegPing_Task(void *pvParameters)
             DebugSerial.println("Ankle Servo is offline");
         }
 
-        if(hipServo&&kneeServo&&ankleServo)
+        if (hipServo && kneeServo && ankleServo)
         {
             Target->LegSetHipAngle(defaultLeg1HipAngle, 2);
             Target->LegSetKneeAngle(defaultLeg1KneeAngle, 2);
@@ -124,5 +124,31 @@ void LegPing_Task(void *pvParameters)
             DebugSerial.println("Some Servo is offline");
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+
+void TextLeg::userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z)
+{
+    SportCalculate::InverseKinematicsResult result = SportCalculate::calculateInverseKinematics(x, y, z);
+    Leg->LegSetHipAngle(result.hipAngle, 2);
+    Leg->LegSetKneeAngle(result.kneeAngle, 2);
+    Leg->LegSetAnkleAngle(result.ankleAngle, 2);
+    switch (jointNum)
+    {
+    case 1:
+
+        Leg->LegSetHipAngle(, 2);
+        break;
+    case 2:
+
+
+        Leg->LegSetKneeAngle(, 2);
+        break;
+    case 3:
+        Leg->LegSetAnkleAngle(, 2);
+        break;
+    default:
+        break;
     }
 }
