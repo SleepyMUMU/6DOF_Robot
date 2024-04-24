@@ -22,13 +22,30 @@ void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t knee
     this->ankleServo.init(this->ankleServoID, &this->protocol); // 初始化ankle踝关节舵机
 }
 
-void LegConfig::LegSetAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
+void LegConfig::LegSetHipAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
 {
-    this->hipServo.setAngle(targetangle, runTime);   // 移动hip髋关节舵机
-    this->kneeServo.setAngle(targetangle, runTime);  // 移动knee膝关节舵机
-    this->ankleServo.setAngle(targetangle, runTime); // 移动ankle踝关节舵机
-    delay(runTime);                                  // 延时
+    this->hipServo.setAngle(targetangle, runTime);     // 移动hip髋关节舵机
+    delay(runTime);                                // 延时
 }
+
+void LegConfig::LegSetKneeAngle( FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
+{
+    this->kneeServo.setAngle(targetangle, runTime);   // 移动knee膝关节舵机
+    delay(runTime);                                // 延时
+}
+
+void LegConfig::LegSetAnkleAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
+{
+    this->ankleServo.setAngle(targetangle, runTime); // 移动ankle踝关节舵机
+    delay(runTime);                                // 延时
+}
+// void LegConfig::LegSetAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
+// {
+//     this->hipServo.setAngle(targetangle, runTime);   // 移动hip髋关节舵机
+//     this->kneeServo.setAngle(targetangle, runTime);  // 移动knee膝关节舵机
+//     this->ankleServo.setAngle(targetangle, runTime); // 移动ankle踝关节舵机
+//     delay(runTime);                                  // 延时
+// }
 
 uint8_t LegConfig::LegPing()
 {
@@ -60,10 +77,49 @@ void LegConfig::LegInit(FSUS_Protocol INput)
 
 void LegPing_Task(void *pvParameters)
 {
-    TCPConfig *COM = (TCPConfig *)pvParameters;
+    LegConfig *Target = (LegConfig *)pvParameters;// 接收对应LegConfig对象
     while (1)
     {
-        
+        uint8_t pingResult = Target->LegPing();
+        bool hipServo, kneeServo, ankleServo;
+        Target->bin2ThreeBool(pingResult, hipServo, kneeServo, ankleServo);
+        if (hipServo)
+        {
+            DebugSerial.println("Hip Servo is online");
+        }
+        else
+        {
+            DebugSerial.println("Hip Servo is offline");
+        }
+
+        if (kneeServo)
+        {
+            DebugSerial.println("Knee Servo is online");
+        }
+        else
+        {
+            DebugSerial.println("Knee Servo is offline");
+        }
+
+        if (ankleServo)
+        {
+            DebugSerial.println("Ankle Servo is online");
+        }
+        else
+        {
+            DebugSerial.println("Ankle Servo is offline");
+        }
+
+        if(hipServo&&kneeServo&&ankleServo)
+        {
+            Target->LegSetHipAngle(defaultLeg1HipAngle, 2);
+            Target->LegSetKneeAngle(defaultLeg1KneeAngle, 2);
+            Target->LegSetAnkleAngle(defaultLeg1AnkleAngle, 2);
+        }
+        else
+        {
+            DebugSerial.println("Some Servo is offline");
+        }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
