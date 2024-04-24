@@ -34,7 +34,7 @@ void setup()
     // 初始化机械臂协议
     // Test.protocol();
     // Test.LegInit(PL1, G1H, G1K, G1A);
-    // MUMU.LegQueue = xQueueCreate(NumofLeg, sizeof(LegConfig *));
+    // MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
     // xQueueSend(MUMU.LegQueue, &Test, 0);
 
     // 生成一个消息队列，将对象MUMU和JIAHONG的指针传递给对方消息队列

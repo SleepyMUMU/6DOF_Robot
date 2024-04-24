@@ -1,7 +1,9 @@
-#ifdef _SPORTCALCULATE_H_
+#ifndef _SPORTCALCULATE_H_
 #define _SPORTCALCULATE_H_
 
 #include <Arduino.h>
+#include <FashionStar_UartServo.h>
+#include <FashionStar_UartServoProtocol.h>
 
 class SportCalculate
 {

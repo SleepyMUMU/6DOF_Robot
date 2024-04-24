@@ -32,6 +32,6 @@ void SportCalculate::InverseKinematics(float x, float y, float z, FSUS_SERVO_ANG
     float f1 = x * cos(hipAngle) +y * sin(hipAngle);
     float f2 = z;
     float temp = f1 - L1;
-    kneeAngle = atan2(temp,f2) - asin(temp^2 + f1^2 - L3^2 - L2^2) / (2 * L2 * sqrt((f1-L2)^2 + f2^2)) * 180 / PI;
-    ankleAngle = acos((temp^2 +f2^2 - L3^2 - L2^2)/2 * L2 * L3 )* 180 / PI;
+    kneeAngle = atan2(temp,f2) - asin(pow(temp, 2) + pow(f1, 2) - pow(L3, 2) - pow(L2, 2)) / (2 * L2 * sqrt(pow((f1-L2), 2) + pow(f2, 2))) * 180 / PI;
+    ankleAngle = acos((pow(temp, 2) + pow(f2, 2) - pow(L3, 2) - pow(L2, 2))/(2 * L2 * L3)) * 180 / PI;
 }
