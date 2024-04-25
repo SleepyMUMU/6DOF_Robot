@@ -1,6 +1,7 @@
 #include <TCPConfig.h>
 #include <Arduino.h>
 #include <ArduinoOTA.h>
+#include <WiFi.h>
 #include <UARTConfig.h>
 #include <WiFiConfig.h>
 #include <CoreSet.h>
@@ -8,19 +9,16 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
-
+#include <Servo.h>
 #include <FashionStar_UartServoProtocol.h>
 #include <FashionStar_UartServo.h>
-
-#include "Servo.h"
 
 WiFiConfig WLAN;
 TCPConfig MUMU;
 TCPConfig JIAHONG;
 LegConfig Test;
 
-FSUS_Protocol PL1;
-
+uint8_t num = 0;
 // FSUS_Protocol Le;
 
 // FSUS_Servo G1H(1, &Le);
@@ -32,8 +30,13 @@ void setup()
     UARTInit();       // 初始化串口
     WLAN.WiFiInit();  // 初始化WiFi
     WLAN.OTAconfig(); // 初始化OTA
-    PL1.init(Serial1,115200,9,8);
+
     // 初始化机械臂协议
+    FSUS_Protocol PL1;
+    Serial2.begin(115200, SERIAL_8N1, 6, 7);
+    PL1.init(&Serial2, 115200, 6, 7);
+    Test.LegInit(PL1, 1, 2, 3, "Leg1");
+
     // Test.protocol();
     // Test.LegInit(PL1, G1H, G1K, G1A);
     // MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
@@ -63,5 +66,7 @@ void setup()
 
 void loop()
 {
-
+    Test.hipServo.setAngle(40,1000);
+    Test.kneeServo.setAngle(40,1000);
+    Test.ankleServo.setAngle(40,1000);
 }

@@ -1,7 +1,5 @@
 #include "CoreSet.h"
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-#include <FreeRTOSConfig.h>
+
 
 #define CONFIG_FREERTOS_USE_TRACE_FACILITY
 #define configUSE_TRACE_FACILITY 1

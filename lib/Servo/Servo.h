@@ -104,7 +104,7 @@ public:
     void userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z);                                                                // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
 };
 
-u8_t AddedNumofLeg = 0;
-QueueHandle_t LegQueue[numofLeg];
+extern u8_t AddedNumofLeg;
+extern QueueHandle_t LegQueue[numofLeg];
 
 #endif

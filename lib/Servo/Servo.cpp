@@ -9,6 +9,9 @@
 //      this->ServoID2 = ServoID2;   // 舵机ID2
 //      this->ServoID3 = ServoID3;   // 舵机ID3
 
+ u8_t AddedNumofLeg = 0;
+ QueueHandle_t LegQueue[numofLeg];
+
 
 LegConfig::LegConfig()
 {
@@ -22,7 +25,7 @@ void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t knee
     this->hipServoID = hipServoID;                                             // 传入Hip髋关节舵机ID1
     this->kneeServoID = kneeServoID;                                           // 传入Knee膝关节舵机ID2
     this->ankleServoID = ankleServoID;                                         // 传入Ankle踝关节舵机ID3
-    this->LegName = String(defaultLegName + String("#") + int(AddedNumofLeg)); // 传入LegName
+    // this->LegName = String(defaultLegName + String("#") + int(AddedNumofLeg)); // 传入LegName
     this->protocol = INputPol;                                                 // 初始化舵机串口通信协议
     this->hipServo.init(this->hipServoID, &this->protocol);                    // 初始化hip髋关节舵机
     this->kneeServo.init(this->kneeServoID, &this->protocol);                  // 初始化knee膝关节舵机
