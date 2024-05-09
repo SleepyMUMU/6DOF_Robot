@@ -3,7 +3,7 @@
 // static Position3 fkine(Theta thetas);
 // static Theta ikine(Position3 &pos);
 
-static Position3 fkine(Theta thetas)
+static Position3 fkine(Theta thetas) // 正运动学 由关节角计算末端坐标
 {
     Position3 position(cos(thetas.angle[0]) * (LEN_HtoK + cos(thetas.angle[1]) * LEN_KtoA + cos(thetas.angle[1] + thetas.angle[2]) * LEN_AtoF),
                        sin(thetas.angle[0]) * (LEN_HtoK + sin(thetas.angle[1]) * LEN_KtoA + sin(thetas.angle[1] + thetas.angle[2]) * LEN_AtoF),
@@ -12,7 +12,7 @@ static Position3 fkine(Theta thetas)
     return position;
 }
 
-static Theta ikine(Position3 &pos)
+static Theta ikine(Position3 &pos) // 逆运动学 由末端坐标计算关节角
 {
     static Position3 pos1;
     static float f1, f2, Lr, alpha_r, alpha1, alpha2, alpha3;
@@ -36,4 +36,36 @@ void Move_Ctl::Init()
     Rps[3] = fkine(Theta(3 * PI / 4, 0, 0));
     Rps[4] = fkine(Theta(PI, 0, 0));
     Rps[5] = fkine(Theta(5 * PI / 4, 0, 0));
+}
+
+Theta Move_Ctl::ikCaculateTest(Position3 &pos)
+{
+    Theta thetas = ikine(pos);
+    return thetas;
+}
+
+void debugIK(void *PvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)PvParameters;
+
+    Move_Ctl moveCtl;
+    moveCtl.Init();
+    Position3 pos(0, 0, 0);
+    Target->TCP.println("[Debug IK]IK Debug Start.");
+    Target->TCP.println("[Debug IK]Please input the position of the end point.");
+    Target->TCP.println("[Debug IK]Format: x y z");
+    while (true)
+    {
+        if (Target->ReceiveData.length() > 0)
+        {
+            Target->TCP.println("[Debug IK]Receive data: " + Target->ReceiveData);
+            // 判断格式是否正确
+            sscanf(Target->ReceiveData.c_str(), "%f %f %f", &pos.x, &pos.y, &pos.z);
+            Target->TCP.println("[Debug IK]Position: " + String(pos.x) + " " + String(pos.y) + " " + String(pos.z));
+            Theta thetas = moveCtl.ikCaculateTest(pos);
+            Target->TCP.println("[Debug IK]Theta: hip=" + String(thetas.angle[0]) + " knee=" + String(thetas.angle[1]) + " ankle=" + String(thetas.angle[2]));
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
+    }
 }

@@ -1,7 +1,7 @@
 #ifndef CONTROL_H
 #define CONTROL_H
-
-#include "mymath.h"
+#include <TCPConfig.h>
+#include <../math/mymath.h>
 
 #define PI 3.14159f
 #define LEN_HtoK 84.0f  // 髋长度
@@ -15,6 +15,9 @@ private:
 
 public:
     void Init();
+    Theta ikCaculateTest(Position3 &pos);
 };
+
+void debugIK(void *PvParameters);
 
 #endif

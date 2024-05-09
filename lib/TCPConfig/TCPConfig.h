@@ -21,7 +21,7 @@
         10, 3, 45, 69 \
     } // JIAHONG服务器IP
 
-#define MUMUServerPort 2566         // MUMU服务器端口
+#define MUMUServerPort 2345         // MUMU服务器端口
 #define JIAHONGServerPort 2577     // JIAHONG服务器端口
 #define defaultServerPort 2566      // 默认服务器端口
 #define defaultServerName "Unknown" // 默认服务器名称

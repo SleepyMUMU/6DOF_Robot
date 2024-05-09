@@ -34,6 +34,17 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->Terminal_TaskHandle = taskHandle;
                 }
                 //...在这写功能逻辑
+                else if (Target->ReceiveData == "debugik")
+                {
+                    Target->TCP.println("[I][RunTime]Debug IK Test.");
+
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(debugIK, "DebugIK", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
+                
                 else if (Target->ReceiveData == "showtask")
                 {
                     Target->TCP.println("[I][RunTime]Show All Task.");
