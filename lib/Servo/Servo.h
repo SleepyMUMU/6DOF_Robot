@@ -7,6 +7,59 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
+// #include <SportCalculate.h>
+// #define debugSerial Serial2
+// #define debugSerial_Rx 7
+// #define debugSerial_Tx 6
+// #define debugBaundRate 115200
+
+
+
+// // 舵机id定义
+// #define Group1_1HipServo 1   // 组1髋关节舵机
+// #define Group1_1KneeServo 2  // 组1膝关节舵机
+// #define Group1_1AnkleServo 3 // 组1踝关节舵机
+
+// // 声明舵机
+// extern FSUS_Servo debug1Hip;
+// extern FSUS_Servo debug2Hip;
+// extern FSUS_Servo debug3Hip;
+// class MyServo
+// {
+
+// public:
+//     // MyServo();
+//     // ~MyServo();
+
+//     void Servo_Init();       // 舵机初始化
+//     void Servo_Check();      // 检测舵机连接
+//     void Servo_SetDamping(); // 设置为阻尼模式
+
+//     float G1HAngle;
+//     float G1KAngle;
+//     float G1AAngle;
+
+// private:
+//     bool Servo1;
+//     bool Servo2;
+//     bool Servo3;
+//     bool Servo4;
+//     bool Servo5;
+//     bool Servo6;
+//     bool Servo7;
+//     bool Servo8;
+//     bool Servo9;
+//     bool Servo10;
+//     bool Servo11;
+//     bool Servo12;
+//     bool Servo13;
+//     bool Servo14;
+//     bool Servo15;
+//     bool Servo16;
+//     bool Servo17;
+//     bool Servo18;
+// };
+
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -32,7 +85,7 @@
 #define G6K 17
 #define G6A 18
 /*********************Config of Arm*********************/
-#define defaultSerial Serial1
+#define defaultSerial Serial
 #define defaultServoBaud 115200
 #define defaultServoID 1
 #define defaultServoID2 2
@@ -41,7 +94,20 @@
 #define defaultLegName "UnNameLeg"
 // ..Wanning: These default<xxx> should NOT used in the original code
 /**********************Other**********************/
-// 设置舵机原始角度
+/*
+    * 机械臂的三个关节的长度mm
+    * L1: hip关节到knee关节的长度
+    * L2: knee关节到ankle关节的长度
+    * L3: ankle关节到末端的长度
+
+*/
+#define L1 84.0f
+#define L2 73.5f
+#define L3 140.8f
+
+/*
+ *舵机原始角度
+ */
 #define defaultLeg1HipAngle 6.6    // 舵机原始角度
 #define defaultLeg1KneeAngle -10.5 // 舵机原始角度
 #define defaultLeg1AnkleAngle -5   // 舵机原始角度
@@ -100,8 +166,9 @@ public:
     uint8_t ThreeBool2Bin(bool hipServo, bool kneeServo, bool ankleServo);
     void bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool &ankleServo);
     void ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
-    void InverseKinematics(float x, float y, float z, FSUS_SERVO_ANGLE_T &hipAngle, FSUS_SERVO_ANGLE_T &kneeAngle, FSUS_SERVO_ANGLE_T &ankleAngle); // 逆运动学逆解
+    void InverseKinematics(float x, float y, float z); // 逆运动学逆解
     void userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z);                                                                // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
+    void LegMoving( float x, float y, float z);
 };
 
 extern u8_t AddedNumofLeg;

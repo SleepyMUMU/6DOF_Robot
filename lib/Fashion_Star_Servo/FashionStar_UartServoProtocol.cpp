@@ -75,7 +75,7 @@ void FSUS_Protocol::init(HardwareSerial *serial, uint32_t baudrate)
     this->serial = serial;
 }
 
-void FSUS_Protocol::init(HardwareSerial *serial, uint32_t baudrate, uint8_t rxPin, uint8_t txPin)
+void FSUS_Protocol::init(HardwareSerial *serial, uint32_t baudrate, int8_t rxPin, int8_t txPin)
 {
 
     this->baudrate = baudrate;
