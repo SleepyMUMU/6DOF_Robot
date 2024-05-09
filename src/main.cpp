@@ -24,8 +24,7 @@ LegConfig Test;
 #define DEBUG_SERIAL_BAUDRATE 115200
 
 FSUS_Protocol protocol(&Serial2, 115200); // 协议
-FSUS_Servo uservo(SERVO_ID, &protocol);                        // 创建舵机
-
+FSUS_Servo uservo(SERVO_ID, &protocol);   // 创建舵机
 
 // FSUS_Protocol Le;
 
@@ -93,13 +92,13 @@ void loop()
     {
         Serial.println("Ping Failed");
     }
-//     DEBUG_SERIAL.println("Set Angle = 90.0");
-//     uservo.setAngle(90.0); // 设置舵机的角度
-//     uservo.wait();
-//     DEBUG_SERIAL.println("Real Angle = " + String(uservo.curRawAngle, 2));
+    //     DEBUG_SERIAL.println("Set Angle = 90.0");
+    //     uservo.setAngle(90.0); // 设置舵机的角度
+    //     uservo.wait();
+    //     DEBUG_SERIAL.println("Real Angle = " + String(uservo.curRawAngle, 2));
 
-//     DEBUG_SERIAL.println("Set Angle = -90.0");
-//     uservo.setAngle(-90);
-//     uservo.wait();
-//     DEBUG_SERIAL.println("Real Angle = " + String(uservo.curRawAngle, 2));
+    //     DEBUG_SERIAL.println("Set Angle = -90.0");
+    //     uservo.setAngle(-90);
+    //     uservo.wait();
+    //     DEBUG_SERIAL.println("Real Angle = " + String(uservo.curRawAngle, 2));
 }
