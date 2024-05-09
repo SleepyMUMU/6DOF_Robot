@@ -7,15 +7,13 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
+#include <mymath.h>
 // #include <SportCalculate.h>
 // #define debugSerial Serial2
 // #define debugSerial_Rx 7
 // #define debugSerial_Tx 6
 // #define debugBaundRate 115200
-
-
-
-// // 舵机id定义
+// 舵机id定义
 // #define Group1_1HipServo 1   // 组1髋关节舵机
 // #define Group1_1KneeServo 2  // 组1膝关节舵机
 // #define Group1_1AnkleServo 3 // 组1踝关节舵机
@@ -137,13 +135,20 @@
 
 class LegConfig
 {
+private:
+
+    FSUS_Servo LegServo[3]; // 机械臂的三个舵机
+    uint8_t LegServoID[3];  // 机械臂的三个舵机ID
+    Theta theta;
 public:
+    
     FSUS_Protocol protocol; // 舵机串口通信协议
     FSUS_Servo hipServo;    // 舵机对象
     FSUS_Servo kneeServo;   // 舵机对象
     FSUS_Servo ankleServo;  // 舵机对象
 
     FSUS_SERVO_ANGLE_T hipAngle, kneeAngle, ankleAngle;
+    LegConfig(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID); // 构造函数
     LegConfig();
     ~LegConfig(); // 暂不考虑释放机械臂对象的情况，析构函数留空
 
@@ -166,10 +171,9 @@ public:
 
     uint8_t ThreeBool2Bin(bool hipServo, bool kneeServo, bool ankleServo);
     void bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool &ankleServo);
-    void ForwardKinematics(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
-    void InverseKinematics(float x, float y, float z); // 逆运动学逆解
-    void userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z);                                                                // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
-    void LegMoving( float x, float y, float z);
+    void fkine(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
+    void ikine(float x, float y, float z);                                                                                              // 逆运动学逆解                                               // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
+    void LegMoving(float x, float y, float z, uint8_t LegNum);
 };
 
 extern u8_t AddedNumofLeg;
