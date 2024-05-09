@@ -177,6 +177,17 @@ void LegConfig::InverseKinematics(float x, float y, float z)
 //     // this->Servo3.init(this->ServoID3, &this->protocol); // 初始化舵机3
 // }
 
+
+
+void LegConfig::LegMoving(float x, float y, float z)
+{
+
+    InverseKinematics(x, y, z);
+    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle,1000);
+    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle,1000);
+    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle,1000);
+}
+
 void LegPing_Task(void *pvParameters)
 {
     LegConfig *Target = (LegConfig *)pvParameters; // 接收对应LegConfig对象
@@ -226,32 +237,14 @@ void LegPing_Task(void *pvParameters)
     }
 }
 
-// void LegConfig::userLegSelect(LegConfig *Leg, uint8_t jointNum, float x, float y, float z)
+// void Legdebug_Task(void *pvParameters)
 // {
-//     // InverseKinematics(x, y, z, hipAngle, this->kneeAngle, this->ankleAngle);
-
-//     switch (jointNum)
+//     LegConfig *target = (LegConfig *)pvParameters;
+//     while(true)
 //     {
-//     case 1:
-//         Leg->LegSetHipAngle(hipAngle, 2);
+//         if(target->)
 
-//         break;
-//     case 2:
-//         Leg->LegSetKneeAngle(kneeAngle, 2);
-
-//         break;
-//     case 3:
-//         Leg->LegSetAnkleAngle(ankleAngle, 2);
-//         break;
-//     default:
-//         break;
 //     }
-// }
-void LegConfig::LegMoving(float x, float y, float z)
-{
 
-    InverseKinematics(x, y, z);
-    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle,1000);
-    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle,1000);
-    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle,1000);
-}
+
+// }

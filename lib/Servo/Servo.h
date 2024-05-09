@@ -152,9 +152,10 @@ public:
     uint8_t ankleServoID; // ankle舵机ID3
 
     String LegName;
-
+    // FSUS_Servo LegServo[3] = {hipServo,kneeServo,ankleServo}; // 机械臂的三个舵机
     // void LegInit(); // 初始化舵机
     // void LegInit(FSUS_Protocol INput);
+
     void LegInit(FSUS_Protocol INputPol, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
     void LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID, String LegName);
     // void LegSetAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime);                                                                      // 移动舵机
