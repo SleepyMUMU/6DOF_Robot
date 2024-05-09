@@ -1,24 +1,27 @@
 #include <mymath.h>
 
 //
-void Position ::zero()
+
+
+
+void Position3 ::zero()
 {
     x = 0;
     y = 0;
     z = 0;
 }
 
-Position operator+(const Position &pos1, const Position &pos2)
+Position3 operator+(const Position3 &pos1, const Position3 &pos2)
 {
-    Position pos;
+    Position3 pos;
     pos.x = pos1.x + pos2.x;
     pos.y = pos1.y + pos2.y;
     pos.z = pos1.z + pos2.z;
     return pos;
 }
-Position operator-(const Position &pos1, const Position &pos2)
+Position3 operator-(const Position3 &pos1, const Position3 &pos2)
 {
-    Position pos;
+    Position3 pos;
     pos.x = pos1.x - pos2.x;
     pos.y = pos1.y - pos2.y;
     pos.z = pos1.z - pos2.z;
