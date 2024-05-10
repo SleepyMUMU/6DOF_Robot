@@ -3,6 +3,21 @@
 // static Position3 fkine(Theta thetas);
 // static Theta ikine(Position3 &pos);
 
+// 角度---->弧度
+float D2R(float deg)
+{
+
+    // String CMD;
+    // CMD.toInt();
+    return deg * PI / 180;
+}
+
+// 弧度---->角度
+float R2D(float rad)
+{
+    return rad * 180 / PI;
+}
+
 static Position3 fkine(Theta thetas) // 正运动学 由关节角计算末端坐标
 {
     Position3 position(cos(thetas.angle[0]) * (LEN_HtoK + cos(thetas.angle[1]) * LEN_KtoA + cos(thetas.angle[1] + thetas.angle[2]) * LEN_AtoF),
@@ -24,7 +39,8 @@ static Theta ikine(Position3 &pos) // 逆运动学 由末端坐标计算关节�
     alpha1 = atan2(pos1.y, pos1.x);
     alpha2 = acos((pow(Lr, 2) + pow(LEN_HtoK, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
     alpha3 = acos((pow(f1 - LEN_KtoA, 2) + pow(f2, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
-    Theta thetas(alpha1, alpha2 - alpha_r, -(alpha2 + alpha3));
+    // Theta thetas(alpha1, alpha2 - alpha_r, -(alpha2 + alpha3));
+    Theta thetas(alpha1, alpha2, alpha3);
     return thetas;
 }
 
@@ -63,7 +79,7 @@ void debugIK(void *PvParameters)
             sscanf(Target->ReceiveData.c_str(), "%f %f %f", &pos.x, &pos.y, &pos.z);
             Target->TCP.println("[Debug IK]Position: " + String(pos.x) + " " + String(pos.y) + " " + String(pos.z));
             Theta thetas = moveCtl.ikCaculateTest(pos);
-            Target->TCP.println("[Debug IK]Theta: hip=" + String(thetas.angle[0]) + " knee=" + String(thetas.angle[1]) + " ankle=" + String(thetas.angle[2]));
+            Target->TCP.println("[Debug IK]Theta: hip=" + String(R2D(thetas.angle[0])) + " knee=" + String(R2D(thetas.angle[1])) + " ankle=" + String(R2D(thetas.angle[2])));
             Target->ReceiveData = "";
         }
         vTaskDelay(1);
