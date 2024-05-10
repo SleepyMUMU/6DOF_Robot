@@ -1,7 +1,11 @@
 #ifndef MYMATH_H
 #define MYMATH_H
 
-#define  PI 3.14159f
+#include <cmath>
+
+// PI在Arduino中已经定义为 #define PI 3.1415926535897932384626433832795
+// #define PI 3.14159f
+
 class Theta
 {
 public:
@@ -19,13 +23,13 @@ public:
 Theta operator+(const Theta &theta1, const Theta &theta2);
 Theta operator-(const Theta &theta1, const Theta &theta2);
 
-class Position
+class Position3
 {
 public:
     float x;
     float y;
     float z;
-    Position(float x = 0, float y = 0, float z = 0)
+    Position3(float x = 0, float y = 0, float z = 0)
     {
         this->x = x;
         this->y = y;
@@ -34,7 +38,7 @@ public:
     void zero();
 };
 
-Position operator+(const Position &pos1, const Position &pos2);
-Position operator-(const Position &pos1, const Position &pos2);
+Position3 operator+(const Position3 &pos1, const Position3 &pos2);
+Position3 operator-(const Position3 &pos1, const Position3 &pos2);
 
 #endif // MYMATH_H

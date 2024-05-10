@@ -174,6 +174,7 @@ public:
     void fkine(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
     void ikine(float x, float y, float z);                                                                                              // 逆运动学逆解                                               // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
     void LegMoving(float x, float y, float z, uint8_t LegNum);
+    void LegMoving(float x, float y, float z);
 };
 
 extern u8_t AddedNumofLeg;

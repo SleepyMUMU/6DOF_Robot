@@ -58,7 +58,7 @@
 //      this->ServoID3 = ServoID3;   // 舵机ID3
 //  }
 u8_t AddedNumofLeg = 0;
-QueueHandle_t LegQueue[numofLeg];//腿部队列
+QueueHandle_t LegQueue[numofLeg]; // 腿部队列
 
 LegConfig::LegConfig()
 {
@@ -68,19 +68,18 @@ LegConfig::~LegConfig()
 }
 
 LegConfig::LegConfig(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID)
-{   
-    this->protocol = INputPol;                                       // 初始化舵机串口通信协议
-    
-    this->LegServoID[0] = hipServoID;     // 传入Hip髋关节舵机ID
-    this->LegServoID[1] = kneeServoID;   // 传入Knee膝关节舵机ID
+{
+    this->protocol = INputPol; // 初始化舵机串口通信协议
+
+    this->LegServoID[0] = hipServoID;   // 传入Hip髋关节舵机ID
+    this->LegServoID[1] = kneeServoID;  // 传入Knee膝关节舵机ID
     this->LegServoID[2] = ankleServoID; // 传入Ankle踝关节舵机ID
 
-    this->LegServo[0].init(this->LegServoID[0], &this->protocol);          // 初始化hip髋关节舵机
-    this->LegServo[1].init(this->LegServoID[1], &this->protocol);        // 初始化knee膝关节舵机
-    this->LegServo[2].init(this->LegServoID[2], &this->protocol);      // 初始化ankle踝关节舵机
-
+    this->LegServo[0].init(this->LegServoID[0], &this->protocol); // 初始化hip髋关节舵机
+    this->LegServo[1].init(this->LegServoID[1], &this->protocol); // 初始化knee膝关节舵机
+    this->LegServo[2].init(this->LegServoID[2], &this->protocol); // 初始化ankle踝关节舵机
 }
-void LegConfig:: LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID)
+void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID)
 {
     this->hipServoID = hipServoID;     // 传入Hip髋关节舵机ID1
     this->kneeServoID = kneeServoID;   // 传入Knee膝关节舵机ID2
@@ -174,10 +173,10 @@ void LegConfig::ikine(float x, float y, float z)
 {
     // 机械臂的逆运动学解算
     this->hipAngle = atan2(y, x) * 180 / PI;
-    float f1 = sqrt(pow(x,2)+pow(y,2));
+    float f1 = sqrt(pow(x, 2) + pow(y, 2));
     float f2 = z;
     float temp = L1 - f1;
-    this->kneeAngle = (-atan(temp/ f2) + asin(pow(f1, 2) + pow(f2, 2) + pow(L1, 2) + pow(L2, 2) - pow(L3, 2) - 2*f1*L1) / (2 * L2 * sqrt(pow((f1 - L1), 2) + pow(f2, 2)))) * 180 / PI;
+    this->kneeAngle = (-atan(temp / f2) + asin(pow(f1, 2) + pow(f2, 2) + pow(L1, 2) + pow(L2, 2) - pow(L3, 2) - 2 * f1 * L1) / (2 * L2 * sqrt(pow((f1 - L1), 2) + pow(f2, 2)))) * 180 / PI;
     this->ankleAngle = acos((pow(temp, 2) + pow(f2, 2) - pow(L2, 2) - pow(L3, 2)) / (2 * L2 * L3)) * 180 / PI;
 }
 
@@ -191,15 +190,14 @@ void LegConfig::LegMoving(float x, float y, float z, uint8_t LegNum)
     Target->ankleServo.setAngle(-Target->ankleAngle + defaultLeg1AnkleAngle, 1000);
 }
 
+void LegConfig::LegMoving(float x, float y, float z)
+{
 
-// void LegConfig::LegMoving(float x, float y, float z)
-// {
-
-//     ikine(x, y, z);
-//     hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle,1000);
-//     kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle,1000);
-//     ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle,1000);
-// }
+    ikine(x, y, z);
+    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, 1000);
+    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, 1000);
+    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, 1000);
+}
 
 void LegPing_Task(void *pvParameters)
 {
@@ -258,6 +256,5 @@ void LegPing_Task(void *pvParameters)
 //         if(target->)
 
 //     }
-
 
 // }

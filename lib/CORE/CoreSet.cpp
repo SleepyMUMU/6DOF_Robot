@@ -1,14 +1,13 @@
 #include "CoreSet.h"
 
-
 #define CONFIG_FREERTOS_USE_TRACE_FACILITY
 #define configUSE_TRACE_FACILITY 1
 
 void coreSetEnable()
 {
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
-    disableCore0WDT();
-    disableCore1WDT();
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // 禁用低压检测
+    disableCore0WDT();                         // 禁用核心0看门狗
+    disableCore1WDT();                         // 禁用核心1看门狗
 }
 
 // 创建函数 主逻辑树
@@ -35,6 +34,17 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->Terminal_TaskHandle = taskHandle;
                 }
                 //...在这写功能逻辑
+                else if (Target->ReceiveData == "debugik")
+                {
+                    Target->TCP.println("[I][RunTime]Debug IK Test.");
+
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(debugIK, "DebugIK", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
+                
                 else if (Target->ReceiveData == "showtask")
                 {
                     Target->TCP.println("[I][RunTime]Show All Task.");
