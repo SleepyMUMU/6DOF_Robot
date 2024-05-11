@@ -46,30 +46,25 @@ Move_Ctl TestCrt;
 void setup()
 {
 
-  TestCrt.Init();
+  // TestCrt.Init();
 
-  TestCrt.ikCaculateTest(Test2);
+  // TestCrt.ikCaculateTest(Test2);
 
   coreSetEnable();
   UARTInit();       // 初始化串口
   WLAN.WiFiInit();  // 初始化WiFi
   WLAN.OTAconfig(); // 初始化OTA
 
-  // // 初始化机械臂协议
-  // Serial.begin(115200);
-  // Serial1.begin(115200, SERIAL_8N1, 18, 17);
-  // Serial2.begin(115200, SERIAL_8N1, 7, 6);
+  protocol1.init(&ServoSerial1, ServoSerial1Baud, ServoSerial1Rx, ServoSerial1Tx);
+  protocol2.init(&ServoSerial2, ServoSerial2Baud, ServoSerial2Rx, ServoSerial2Tx);
 
-  // protocol1.init(&Serial1, 115200, 18, 17);
-  // protocol2.init(&Serial2, 115200, 7, 6);
-
-  // Leg1.LegInit(protocol2, 1, 2, 3);
-  // Leg2.LegInit(protocol2, 4, 5, 6);
-  // Leg3.LegInit(protocol2, 7, 8, 9);
-  // Leg4.LegInit(protocol1, 10, 11, 12);
-  // Leg5.LegInit(protocol1, 13, 14, 15);
-  // Leg6.LegInit(protocol1, 16, 17, 18);
-
+  Leg1.LegInit(protocol2, 1);
+  Leg2.LegInit(protocol2, 2);
+  Leg3.LegInit(protocol2, 3);
+  Leg4.LegInit(protocol1, 4);
+  Leg5.LegInit(protocol1, 5);
+  Leg6.LegInit(protocol1, 6);
+  delay(1000); // 延时
   // 生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));

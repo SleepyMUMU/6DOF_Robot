@@ -1,5 +1,6 @@
 #include "TCPConfig.h"
 
+
 TCPConfig::TCPConfig()
 {
     this->serverIP = defaultServerIP;

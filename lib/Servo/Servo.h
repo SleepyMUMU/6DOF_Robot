@@ -3,61 +3,12 @@
 #include <Arduino.h>
 #include "FashionStar_UartServoProtocol.h" // 串口总线舵机通信协议
 #include "FashionStar_UartServo.h"         // 串口总线舵机SDK
-#include "TCPConfig.h"
+
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
 #include <mymath.h>
-// #include <SportCalculate.h>
-// #define debugSerial Serial2
-// #define debugSerial_Rx 7
-// #define debugSerial_Tx 6
-// #define debugBaundRate 115200
-// 舵机id定义
-// #define Group1_1HipServo 1   // 组1髋关节舵机
-// #define Group1_1KneeServo 2  // 组1膝关节舵机
-// #define Group1_1AnkleServo 3 // 组1踝关节舵机
-
-// // 声明舵机
-// extern FSUS_Servo debug1Hip;
-// extern FSUS_Servo debug2Hip;
-// extern FSUS_Servo debug3Hip;
-// class MyServo
-// {
-
-// public:
-//     // MyServo();
-//     // ~MyServo();
-
-//     void Servo_Init();       // 舵机初始化
-//     void Servo_Check();      // 检测舵机连接
-//     void Servo_SetDamping(); // 设置为阻尼模式
-
-//     float G1HAngle;
-//     float G1KAngle;
-//     float G1AAngle;
-
-// private:
-//     bool Servo1;
-//     bool Servo2;
-//     bool Servo3;
-//     bool Servo4;
-//     bool Servo5;
-//     bool Servo6;
-//     bool Servo7;
-//     bool Servo8;
-//     bool Servo9;
-//     bool Servo10;
-//     bool Servo11;
-//     bool Servo12;
-//     bool Servo13;
-//     bool Servo14;
-//     bool Servo15;
-//     bool Servo16;
-//     bool Servo17;
-//     bool Servo18;
-// };
-
+#include "../TCPConfig/TCPConfig.h"
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -90,6 +41,7 @@
 #define defaultServoID3 3
 #define numofLeg 6
 #define defaultLegName "UnNameLeg"
+#define defaultRunTime 1000
 // ..Wanning: These default<xxx> should NOT used in the original code
 /**********************Other**********************/
 /*
@@ -133,25 +85,27 @@
 #define defaultAngle 0
 #define defaultTime 1000
 
+extern FSUS_SERVO_ANGLE_T defaultAngleArray[7][3];
+
 class LegConfig
 {
 private:
-
     FSUS_Servo LegServo[3]; // 机械臂的三个舵机
     uint8_t LegServoID[3];  // 机械臂的三个舵机ID
     Theta theta;
+
 public:
-    
     FSUS_Protocol protocol; // 舵机串口通信协议
     FSUS_Servo hipServo;    // 舵机对象
     FSUS_Servo kneeServo;   // 舵机对象
     FSUS_Servo ankleServo;  // 舵机对象
 
     FSUS_SERVO_ANGLE_T hipAngle, kneeAngle, ankleAngle;
+    FSUS_SERVO_ANGLE_T defaultHipAngle, defaultKneeAngle, defaultAnkleAngle;
     LegConfig(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID); // 构造函数
     LegConfig();
     ~LegConfig(); // 暂不考虑释放机械臂对象的情况，析构函数留空
-
+    u8_t legSer;
     uint8_t hipServoID;   // hip髋关节舵机ID1
     uint8_t kneeServoID;  // knee膝关节舵机ID2
     uint8_t ankleServoID; // ankle舵机ID3
@@ -162,7 +116,9 @@ public:
     // void LegInit(FSUS_Protocol INput);
 
     void LegInit(FSUS_Protocol INputPol, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3);
-    void LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID, String LegName);
+    void LegPowerDown();
+    void LegInit(FSUS_Protocol INputPol, u8_t LegSer);
+    void LegSetAngle(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, FSUS_INTERVAL_T runTime);
     // void LegSetAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime);                                                                      // 移动舵机
     void LegSetHipAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime);
     void LegSetKneeAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime);
@@ -179,5 +135,7 @@ public:
 
 extern u8_t AddedNumofLeg;
 extern QueueHandle_t LegQueue[numofLeg];
+
+void LegPowerDown_Task(void *pvParameters);
 
 #endif

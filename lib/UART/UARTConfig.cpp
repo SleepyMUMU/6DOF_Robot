@@ -10,6 +10,23 @@ void UARTInit()
     }
     DebugPrintTest(&Serial);
     Serial.println("[Robot]Master V1.0");
+
+    DebugSerial.println("[UART]Serial Port Init Success");
+    // DebugSerial.println("[UART]Servo Serial1 Initing...");
+    ServoSerial1.begin(ServoSerial1Baud, SERIAL_8N1, ServoSerial1Rx, ServoSerial1Tx);
+    // while (!ServoSerial1)
+    // {
+    //     ; // 等待串口连接。对于 Leonardo/Micro，等待是必要的
+    // }
+    DebugSerial.println("[UART]Servo Serial1 Init Success");
+
+    // DebugSerial.println("[UART]Servo Serial2 Initing...");
+    ServoSerial2.begin(ServoSerial2Baud, SERIAL_8N1, ServoSerial2Rx, ServoSerial2Tx);
+    // while (!ServoSerial2)
+    // {
+    //     ; // 等待串口连接。对于 Leonardo/Micro，等待是必要的
+    // }
+    DebugSerial.println("[UART]Servo Serial2 Init Success");
 }
 
 void DebugPrintTest(Stream *stream)

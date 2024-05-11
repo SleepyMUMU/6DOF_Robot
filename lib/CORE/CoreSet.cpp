@@ -67,9 +67,18 @@ void tcpRunTimeEnvTask(void *pvParam)
                 else if (Target->ReceiveData == "restart")
                 {
                     Target->TCP.println("[I][RunTime]Restarting....");
-
                     esp_restart();
                 }
+                else if (Target->ReceiveData == "legpowerdown")
+                {
+                    Target->TCP.println("[I][RunTime]Leg Power Down.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(LegPowerDown_Task, "LegPowerDown", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
+
                 else if (Target->ReceiveData == "ipconfig")
                 {
                     Target->TCP.println("[I][ipconfig]IP Config.");

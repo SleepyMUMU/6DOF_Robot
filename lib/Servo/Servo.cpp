@@ -1,5 +1,23 @@
 #include "Servo.h"
 
+FSUS_SERVO_ANGLE_T defaultAngleArray[7][3] = {
+    {0, 0, 0},
+    {defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle},
+    {defaultLeg2HipAngle, defaultLeg2KneeAngle, defaultLeg2AnkleAngle},
+    {defaultLeg3HipAngle, defaultLeg3KneeAngle, defaultLeg3AnkleAngle},
+    {defaultLeg4HipAngle, defaultLeg4KneeAngle, defaultLeg4AnkleAngle},
+    {defaultLeg5HipAngle, defaultLeg5KneeAngle, defaultLeg5AnkleAngle},
+    {defaultLeg6HipAngle, defaultLeg6KneeAngle, defaultLeg6AnkleAngle}};
+
+u8_t defaultLegServoSerial[7][3] = {
+    {0, 0, 0},
+    {1, 2, 3},
+    {4, 5, 6},
+    {7, 8, 9},
+    {10, 11, 12},
+    {13, 14, 15},
+    {16, 17, 18}};
+
 // FSUS_Protocol debugServo(&debugSerial, debugBaundRate);
 
 // FSUS_Servo debug1Hip(Group1_1HipServo, &debugServo);
@@ -94,12 +112,22 @@ void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t knee
     xQueueSend(LegQueue[AddedNumofLeg], &LegPointer, portMAX_DELAY); // 发送消息队列
     AddedNumofLeg++;                                                 // 增加机械臂数量
 }
-void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID, String LegName)
+void LegConfig::LegPowerDown()
 {
-    this->hipServoID = hipServoID;                                   // 传入Hip髋关节舵机ID1
-    this->kneeServoID = kneeServoID;                                 // 传入Knee膝关节舵机ID2
-    this->ankleServoID = ankleServoID;                               // 传入Ankle踝关节舵机ID3
-    this->LegName = LegName;                                         // 传入LegName
+    this->hipServo.setTorque(false);   // hip髋关节舵机关闭阻尼
+    this->kneeServo.setTorque(false);  // knee膝关节舵机关闭阻尼
+    this->ankleServo.setTorque(false); // ankle踝关节舵机关闭阻尼
+}
+void LegConfig::LegInit(FSUS_Protocol INputPol, u8_t LegSer)
+{
+    this->legSer = LegSer; // 传入机械臂序号
+
+    this->hipServoID = defaultLegServoSerial[LegSer][0];             // 传入Hip髋关节舵机ID1
+    this->kneeServoID = defaultLegServoSerial[LegSer][1];            // 传入Knee膝关节舵机ID2
+    this->ankleServoID = defaultLegServoSerial[LegSer][2];           // 传入Ankle踝关节舵机ID3
+    this->defaultHipAngle = defaultAngleArray[LegSer][0];            // 传入默认Hip髋关节角度
+    this->defaultKneeAngle = defaultAngleArray[LegSer][1];           // 传入默认Knee膝关节角度
+    this->defaultAnkleAngle = defaultAngleArray[LegSer][2];          // 传入默认Ankle踝关节角度
     this->protocol = INputPol;                                       // 初始化舵机串口通信协议
     this->hipServo.init(this->hipServoID, &this->protocol);          // 初始化hip髋关节舵机
     this->kneeServo.init(this->kneeServoID, &this->protocol);        // 初始化knee膝关节舵机
@@ -108,6 +136,13 @@ void LegConfig::LegInit(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t knee
     LegConfig *LegPointer = this;                                    // 将LegConfig对象的指针传递给消息队列
     xQueueSend(LegQueue[AddedNumofLeg], &LegPointer, portMAX_DELAY); // 发送消息队列
     AddedNumofLeg++;
+    LegSetAngle(defaultHipAngle, defaultKneeAngle, defaultAnkleAngle, defaultRunTime);
+}
+void LegConfig::LegSetAngle(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, FSUS_INTERVAL_T runTime)
+{
+    this->hipServo.setAngle(hipAngle, runTime);     // 移动hip髋关节舵机
+    this->kneeServo.setAngle(kneeAngle, runTime);   // 移动knee膝关节舵机
+    this->ankleServo.setAngle(ankleAngle, runTime); // 移动ankle踝关节舵机
 }
 
 void LegConfig::LegSetHipAngle(FSUS_SERVO_ANGLE_T targetangle, FSUS_INTERVAL_T runTime)
@@ -247,7 +282,33 @@ void LegPing_Task(void *pvParameters)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
+void LegPowerDown_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
 
+    Target->TCP.println("[LegPowerDown]Please enter the Serial Number of the Leg you want to PowerDown.");
+    while (1)
+    {
+        if (Target->ReceiveData != "")
+        {
+            Target->TCP.printf("[LegPowerDown]The Serial Number of the Leg you want to PowerDown is %s.\n", Target->ReceiveData.c_str());
+            int LegNum = Target->ReceiveData.toInt() - 1;
+            if (LegNum < AddedNumofLeg)
+            {
+                LegConfig *TargetLeg;
+                xQueueReceive(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                TargetLeg->LegPowerDown();
+                Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", LegNum);
+            }
+            else
+            {
+                Target->TCP.println("[LegPowerDown]The Serial Number is out of range.");
+            }
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
+    }
+}
 // void Legdebug_Task(void *pvParameters)
 // {
 //     LegConfig *target = (LegConfig *)pvParameters;

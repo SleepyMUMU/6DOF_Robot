@@ -3,10 +3,10 @@
 
 #include <Arduino.h>
 // #include "WiFiClient.h"
+#include <../UART/UARTConfig.h>
+#include <../CORE/CoreSet.h>
+#include <../WLAN/WiFiConfig.h>
 #include <WiFi.h>
-#include <UARTConfig.h>
-#include <CoreSet.h>
-
 /*********Server Config*********/
 #define defaultServerIP \
     {                   \
