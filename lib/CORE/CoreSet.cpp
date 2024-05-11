@@ -44,7 +44,7 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->Terminal_TaskHandle = taskHandle;
                     Target->truncateStream = true;
                 }
-                
+
                 else if (Target->ReceiveData == "showtask")
                 {
                     Target->TCP.println("[I][RunTime]Show All Task.");
@@ -70,7 +70,15 @@ void tcpRunTimeEnvTask(void *pvParam)
 
                     esp_restart();
                 }
-
+                else if (Target->ReceiveData == "ipconfig")
+                {
+                    Target->TCP.println("[I][ipconfig]IP Config.");
+                    Target->TCP.printf("[I][ipconfig]IP:%s\n", WiFi.localIP().toString().c_str());
+                    Target->TCP.printf("[I][ipconfig]Gateway:%s\n", WiFi.gatewayIP().toString().c_str());
+                    Target->TCP.printf("[I][ipconfig]Subnet:%s\n", WiFi.subnetMask().toString().c_str());
+                    Target->TCP.printf("[I][ipconfig]DNS:%s\n", WiFi.dnsIP().toString().c_str());
+                    Target->TCP.printf("[I][ipconfig]MAC:%s\n", WiFi.macAddress().c_str());
+                }
                 // ShowAllTask ... Todo
                 // else if (Target->ReceiveData == "showTask")
                 // {

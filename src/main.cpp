@@ -41,94 +41,6 @@ Theta Test1(0, 0, 0);
 Position3 Test2(0, 0, 0);
 Position3 Test3(0, 0, 0);
 
-// // 串口接收任务
-// void SerialRecive_Task(void *parameter)
-// {
-//     float x, y, z;
-//     while (1)
-//     {
-//         if (Serial.available() > 0)
-//         {
-//             Serial.readBytes(ReciveBuffer, sizeof(ReciveBuffer));
-//             // 判断接收数据
-//             for (int i = 0; i < sizeof(ReciveBuffer); i++)
-//             { // 判断数据起始
-//                 if (ReciveBuffer[i] == '=')
-//                 {
-//                     Num_Start = i + 1;
-//                 }
-//                 if (ReciveBuffer[i] == '!')
-//                 {
-//                     Num_End = i - 1;
-//                     break;
-//                 }
-//                 else
-//                 {
-//                 };
-//             }
-//             // 判断接收数据正负
-//             if (ReciveBuffer[Num_Start] == '-')
-//             {
-//                 Num_Start += 1;
-//                 Flag = 1;
-//             }
-//             else
-//             {
-//                 Flag = 0;
-//             }
-//             // 判断数据长度
-//             DataLength = Num_End - Num_Start + 1;
-//             if (DataLength == 1)
-//             {
-//                 ReciveData = ReciveBuffer[Num_Start] - '0';
-//             }
-//             else if (DataLength == 2)
-//             {
-//                 ReciveData = (ReciveBuffer[Num_Start] - '0') + ((ReciveBuffer[Num_Start + 2] - '0') * 0.1f);
-//             }
-//             else if (DataLength == 3)
-//             {
-//                 ReciveData = (ReciveBuffer[Num_Start] - '0') + (ReciveBuffer[Num_Start + 2] - '0') * 0.1f + (ReciveBuffer[Num_Start + 3] - '0') * 0.01f;
-//             }
-//             else if (DataLength == 4)
-//             {
-//                 ReciveData = (ReciveBuffer[Num_Start] - '0') + (ReciveBuffer[Num_Start + 2] - '0') * 0.1f + (ReciveBuffer[Num_Start + 3] - '0') * 0.01f + (ReciveBuffer[Num_Start + 4] - '0') * 0.001f;
-//             }
-//             else
-//             {
-//                 ReciveData = 0;
-//             }
-
-//             if (Flag == 1)
-//             {
-//                 ReciveData = -ReciveData;
-//             }
-//             else
-//             {
-//                 ReciveData = ReciveData;
-//             }
-//             if (ReciveBuffer[0] == 'x')
-//             {
-//                 x = ReciveData;
-//             }
-//             else if (ReciveBuffer[0] == 'y')
-//             {
-//                 y = ReciveData;
-//             }
-//             else if (ReciveBuffer[0] == 'z')
-//             {
-//                 z = ReciveData;
-//             }
-//             else
-//             {
-//                 ReciveData = 0;
-//             }
-//             Leg1.LegMoving(x, y, z);
-//         }
-//         vTaskDelay(100 / portTICK_PERIOD_MS);
-//     }
-// }
-
 Move_Ctl TestCrt;
 
 void setup()
@@ -182,9 +94,9 @@ void setup()
   JIAHONG.serverPort = JIAHONGServerPort;
   JIAHONG.serverName = "JIAHONG";
 
-  xTaskCreate(OTATask, "OTA_Task", 4096, &WLAN, 1, &WLAN.OTA_TaskHandle);            // OTA任务
-  xTaskCreate(TCPInit_Task, "MUMU_TCP_Init", 4096, &MUMU, 1, &MUMU.Init_TaskHandle); // TCP初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
-                                                                                     // xTaskCreate(TCPInit_Task, "JIAHONG_TCP_Init", 4096, &JIAHONG, 1, &JIAHONG.Init_TaskHandle); // TCP.初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
+  xTaskCreate(OTATask, "OTA_Task", 4096, &WLAN, 1, &WLAN.OTA_TaskHandle);                     // OTA任务
+  xTaskCreate(TCPInit_Task, "MUMU_TCP_Init", 4096, &MUMU, 1, &MUMU.Init_TaskHandle);          // TCP初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
+  xTaskCreate(TCPInit_Task, "JIAHONG_TCP_Init", 4096, &JIAHONG, 1, &JIAHONG.Init_TaskHandle); // TCP.初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
   //  xTaskCreate(SerialRecive_Task, "SerialRecive_Task", 4096, NULL, 1, NULL);                   // 串口接收任务
 }
 

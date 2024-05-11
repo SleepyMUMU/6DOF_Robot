@@ -188,7 +188,20 @@ void OTATask(void *pvParam)
         delay(1);
     }
 }
+void WiFiStatusTask(void *pvParam)
+{
+    TCPConfig *Target = (TCPConfig *)pvParam;
+    if (WiFi.status() == WL_CONNECTED)
+    {
 
+        Target->TCP.println("[I][WiFi]IP: " + WiFi.localIP().toString());
+    }
+    else
+    {
+        Target->TCP.printf("[E][WiFi]WiFi disconnected\n");
+    }
+    vTaskDelete(NULL);
+}
 // void WiFiReconnect_Task(void *pvParam)
 // {
 //     WiFiConfig *Target = (WiFiConfig *)pvParam;

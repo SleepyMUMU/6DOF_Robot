@@ -8,17 +8,18 @@
 #include <WiFiMulti.h>
 #include <UARTConfig.h>
 #include <ArduinoOTA.h>
-//#include <TCP.h>
+#include <TCPConfig.h>
+// #include <TCP.h>
 
 /*********WiFi Config*********/
 #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
 #define defaultPassward "woaiwuxie1" // 默认WiFi密码
-// #define defaultSSID "MUMUSNITRO"   // 默认WiFi名称
+// #define defaultSSID "MUMUSPC"   // 默认WiFi名称
 // #define defaultPassward "yssahttn" // 默认WiFi密码
 /*********Static IP Config*********/
 #define defaultLocalIP   \
     {                    \
-        192, 168, 31, 32 \
+        192, 168, 31, 62 \
     } // 默认本地IP
 #define defaultGateway  \
     {                   \
@@ -69,4 +70,5 @@ public:
     void OTAconfig(const char *OTAHostname, const char *OTAPassword);
 };
 void OTATask(void *pvParam);
+void WiFiStatusTask(void *pvParam);
 #endif //_WIFICONFIG_H_
