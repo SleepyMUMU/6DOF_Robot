@@ -236,6 +236,7 @@ void LegConfig::ikine(Position3 &pos)
 /*运动学逆解*/
 void LegConfig::ikine(float x, float y, float z)
 {
+    
     float f1, f2, Lr, alpha_r, alpha1, alpha2, alpha3;
     f1 = sqrt(pow(x, 2) + pow(y, 2));
     f2 = z;
@@ -244,8 +245,24 @@ void LegConfig::ikine(float x, float y, float z)
     alpha1 = atan2(y, x);
     alpha2 = acos((pow(Lr, 2) + pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
     alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
+    if(z>0)
+    { 
+        alpha2 = alpha2-PI;
+        this->kneeAngle = R2D(alpha2);
+        
+       
+    }
+    else if(z<0)
+    {
+        alpha2 = alpha2+PI;
+        this->kneeAngle = R2D(alpha2);
+    }
+    else
+    {
+        this->kneeAngle = R2D(alpha2);
+    }
     this->hipAngle = R2D(alpha1);
-    this->kneeAngle = R2D(alpha2);
+    // this->kneeAngle = R2D(alpha2);
     this->ankleAngle = R2D(alpha3);
 }
 
