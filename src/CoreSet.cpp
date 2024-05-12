@@ -53,7 +53,7 @@ void tcpRunTimeEnvTask(void *pvParam)
                     TaskHindBind(&taskHandle, Target);
                     Target->Terminal_TaskHandle = taskHandle;
                 }
-                else if (Target->ReceiveData == "legctrl")
+                else if (Target->ReceiveData == "ctrl")
                 {
                     Target->TCP.println("[I][RunTime]Leg Control.");
                     TaskHandle_t taskHandle = NULL;
@@ -86,7 +86,7 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->TCP.println("[I][RunTime]Restarting....");
                     esp_restart();
                 }
-                else if (Target->ReceiveData == "legpowerdown")
+                else if (Target->ReceiveData == "powerdown")
                 {
                     Target->TCP.println("[I][RunTime]Leg Power Down.");
                     TaskHandle_t taskHandle = NULL;

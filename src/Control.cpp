@@ -45,7 +45,7 @@ static Theta ikine(Position3 &pos) // 逆运动学 由末端坐标计算关节�
     alpha2 = acos((pow(Lr, 2) + pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
     alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
     // Theta thetas(alpha1, alpha2 - alpha_r, -(alpha2 + alpha3));
-    Theta thetas(alpha1, alpha2, alpha3);
+    Theta thetas(alpha1, alpha2, alpha3 - (PI / 2));
     return thetas;
 }
 
