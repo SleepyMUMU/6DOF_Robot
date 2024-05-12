@@ -18,15 +18,12 @@ u8_t defaultLegServoSerial[7][3] = {
     {13, 14, 15},
     {16, 17, 18}};
 
-
 float debugAngle[5][3] = {
 
-    {227.9, 0, -121.9},
     {197.4, 113.9, -121.9},
-    {136.4, 78.75, -140.8},
-    {197.4, 113.9, -121.9},
-    {157.5, 0, -140.8}};
-
+    {78.75, 136.4, -140.8},
+    {78.75, -136.4, -140.8},
+};
 
 u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
@@ -226,7 +223,7 @@ void LegConfig::ikine(float x, float y, float z)
     }
     this->hipAngle = R2D(alpha1);
     // this->kneeAngle = R2D(alpha2);
-    this->ankleAngle = R2D(alpha3 - PI / 2);
+    this->ankleAngle = -R2D(alpha3 - PI / 2);
 }
 
 void LegConfig::LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval)
@@ -238,8 +235,8 @@ void LegConfig::LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval)
 }
 void LegConfig::LegMoving()
 {
-    int i; // Declare the variable "i"
-    for(i = 0; i < 5; i++) // Fix the for loop condition
+    int i;                  // Declare the variable "i"
+    for (i = 0; i < 3; i++) // Fix the for loop condition
     {
         ikine(debugAngle[i][0], debugAngle[i][1], debugAngle[i][2]);
         hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, defaultTime);
@@ -247,7 +244,6 @@ void LegConfig::LegMoving()
         ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
         delay(2000);
     }
-
 }
 void LegConfig::LegMoving(float x, float y, float z)
 {
