@@ -62,7 +62,16 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->Terminal_TaskHandle = taskHandle;
                     Target->truncateStream = true;
                 }
-                
+                else if (Target->ReceiveData == "setangle")
+                {
+                    Target->TCP.println("[I][RunTime]Set Angle.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(LegSetAngle_task, "SetAngle", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
+
                 else if (Target->ReceiveData == "sendmsg")
                 {
                     Target->TCP.println("[I][RunTime]Send Message To Other Client.");

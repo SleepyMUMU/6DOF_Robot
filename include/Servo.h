@@ -141,4 +141,5 @@ extern QueueHandle_t LegQueue[numofLeg];
 
 void LegPowerDown_Task(void *pvParameters);
 void LegCrtl_Task(void *pvParameters);
+void LegSetAngle_task(void *pvParameters);
 #endif

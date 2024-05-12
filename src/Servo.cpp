@@ -265,6 +265,50 @@ void LegConfig::LegMoving(float x, float y, float z)
     kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, defaultTime);
     ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
 }
+void LegSetAngle_task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应TCPConfig对象
+    Target->TCP.println("[LegSetAngle]Please enter the Serial Number of the Leg you want to control.");
+    while (1)
+    {
+        if (Target->ReceiveData != "")
+        {
+            Target->TCP.printf("[LegSetAngle]The Serial Number of the Leg you want to control is %s.\n", Target->ReceiveData.c_str());
+            int LegNum = Target->ReceiveData.toInt() - 1;
+            Target->ReceiveData = "";
+            if (LegNum < AddedNumofLeg)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                Target->TCP.println("[LegSetAngle]Please enter the Hip,Knee,Ankle of the Leg you want to control.");
+                while (1)
+                {
+                    if (Target->ReceiveData != "")
+                    {
+                        float Hip, Knee, Ankle;
+                        sscanf(Target->ReceiveData.c_str(), "%f %f %f", &Hip, &Knee, &Ankle);
+                        Target->TCP.printf("[LegSetAngle]The Hip,Knee,Ankle of the Leg you want to control is %f,%f,%f.\n", Hip, Knee, Ankle);
+                        TargetLeg->LegSetAngle(Hip, Knee, Ankle, defaultRunTime);
+                        Target->TCP.println("[LegSetAngle]The Leg is moving.");
+                        Target->ReceiveData = "";
+                        Target->Terminal_TaskHandle = NULL;
+                        Target->truncateStream = false;
+                        vTaskDelete(NULL);
+                    }
+                    vTaskDelay(1);
+                }
+            }
+            else
+            {
+                Target->TCP.println("[LegSetAngle]The Serial Number is out of range.");
+                Target->TCP.println("[LegSetAngle]Please enter the Serial Number of the Leg you want to control.");
+            }
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
+    }
+    vTaskDelete(NULL);
+}
 void LegCrtl_Task(void *pvParameters)
 {
     bool LegCrtlFlag = true;
@@ -288,9 +332,9 @@ void LegCrtl_Task(void *pvParameters)
                 {
                     if (Target->ReceiveData != "")
                     {
-                        Target->TCP.printf("[LegCrtl]The x,y,z of the Leg you want to control is %s.\n", Target->ReceiveData.c_str());
                         float x, y, z;
-                        sscanf(Target->ReceiveData.c_str(), "%f,%f,%f", &x, &y, &z);
+                        sscanf(Target->ReceiveData.c_str(), "%f %f %f", &x, &y, &z);
+                        Target->TCP.printf("[LegCrtl]The x,y,z of the Leg you want to control is %f,%f,%f.\n", x, y, z);
                         TargetLeg->LegMoving(x, y, z);
                         Target->TCP.println("[LegCrtl]The Leg is moving.");
                         Target->ReceiveData = "";
@@ -377,7 +421,6 @@ void LegPowerDown_Task(void *pvParameters)
                 for (size_t i = 0; i < AddedNumofLeg; i++)
                 {
                     LegConfig *TargetLeg;
-
                     xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
                     TargetLeg->LegPowerDown();
                     Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", i);
