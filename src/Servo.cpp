@@ -18,64 +18,66 @@ u8_t defaultLegServoSerial[7][3] = {
     {13, 14, 15},
     {16, 17, 18}};
 
-// FSUS_Protocol debugServo(&debugSerial, debugBaundRate);
+float defa
 
-// FSUS_Servo debug1Hip(Group1_1HipServo, &debugServo);
-// FSUS_Servo debug2Hip(Group1_1KneeServo, &debugServo);
-// FSUS_Servo debug3Hip(Group1_1AnkleServo, &debugServo);
+    // FSUS_Protocol debugServo(&debugSerial, debugBaundRate);
 
-// void MyServo::Servo_Init()
-// {
-//     debugServo.init(&debugSerial, debugBaundRate, debugSerial_Rx, debugSerial_Tx);
-//     debug1Hip.init();
-//     debug2Hip.init();
-//     debug3Hip.init();
-// }
+    // FSUS_Servo debug1Hip(Group1_1HipServo, &debugServo);
+    // FSUS_Servo debug2Hip(Group1_1KneeServo, &debugServo);
+    // FSUS_Servo debug3Hip(Group1_1AnkleServo, &debugServo);
 
-// void MyServo::Servo_Check()
-// {
+    // void MyServo::Servo_Init()
+    // {
+    //     debugServo.init(&debugSerial, debugBaundRate, debugSerial_Rx, debugSerial_Tx);
+    //     debug1Hip.init();
+    //     debug2Hip.init();
+    //     debug3Hip.init();
+    // }
 
-//     Servo1 = debug1Hip.ping();
-//     Servo2 = debug2Hip.ping();
-//     Servo3 = debug3Hip.ping();
-//     if (Servo1)
-//     {
-//         Serial.println("Servo1 is online");
-//     }
-//     else
-//     {
-//         Serial.println("Servo1 is offline");
-//     }
+    // void MyServo::Servo_Check()
+    // {
 
-//     if (Servo2)
-//     {
-//         Serial.println("Servo2 is online");
-//     }
-//     else
-//     {
-//         Serial.println("Servo2 is offline");
-//     }
+    //     Servo1 = debug1Hip.ping();
+    //     Servo2 = debug2Hip.ping();
+    //     Servo3 = debug3Hip.ping();
+    //     if (Servo1)
+    //     {
+    //         Serial.println("Servo1 is online");
+    //     }
+    //     else
+    //     {
+    //         Serial.println("Servo1 is offline");
+    //     }
 
-//     if (Servo3)
-//     {
-//         Serial.println("Servo3 is online");
-//     }
-//     else
-//     {
-//         Serial.println("Servo3 is offline");
-//     }
-// }
+    //     if (Servo2)
+    //     {
+    //         Serial.println("Servo2 is online");
+    //     }
+    //     else
+    //     {
+    //         Serial.println("Servo2 is offline");
+    //     }
 
-// 弃用Config，直接传递参数进Init
-//  LegConfig::LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3)
-//  {
-//      this->serial = serial;       // 串口ID
-//      this->ServoBaud = ServoBaud; // 舵机波特率
-//      this->ServoID = ServoID;     // 舵机ID
-//      this->ServoID2 = ServoID2;   // 舵机ID2
-//      this->ServoID3 = ServoID3;   // 舵机ID3
-//  }
-u8_t AddedNumofLeg = 0;
+    //     if (Servo3)
+    //     {
+    //         Serial.println("Servo3 is online");
+    //     }
+    //     else
+    //     {
+    //         Serial.println("Servo3 is offline");
+    //     }
+    // }
+
+    // 弃用Config，直接传递参数进Init
+    //  LegConfig::LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3)
+    //  {
+    //      this->serial = serial;       // 串口ID
+    //      this->ServoBaud = ServoBaud; // 舵机波特率
+    //      this->ServoID = ServoID;     // 舵机ID
+    //      this->ServoID2 = ServoID2;   // 舵机ID2
+    //      this->ServoID3 = ServoID3;   // 舵机ID3
+    //  }
+    u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
 
 LegConfig::LegConfig()
@@ -444,26 +446,67 @@ void LegAngleQuery_Task(void *pvParameters)
         TargetLeg->SetDampMode();
     }
     Target->TCP.println("[Leg Power]All Leg is Set to Damp Mode.");
-    Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
+    Target->TCP.println("[LegAngleQuery]choose the mode you want to query:1.raw angle 2.real angle 3.both");
+    u8_t mode = 1;
+
     while (1)
     {
         if (Target->ReceiveData != "")
         {
-            Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
-            int LegNum = Target->ReceiveData.toInt() - 1;
-            if (LegNum < AddedNumofLeg)
+            mode = Target->ReceiveData.toInt();
+            Target->ReceiveData = "";
+            Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
+            while (Target->ReceiveData == "")
+                ;
+            if (mode == 1)
             {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
-                while (1)
+                Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
+                int LegNum = Target->ReceiveData.toInt() - 1;
+                if (LegNum < AddedNumofLeg)
                 {
-                    Target->TCP.printf("[LegAngleQuery]The Angle of the Leg you want to Query is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
-                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                    LegConfig *TargetLeg;
+                    xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                    while (1)
+                    {
+                        Target->TCP.printf("[LegAngleQuery]The Raw angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle() - defaultAngleArray[LegNum][0], TargetLeg->kneeServo.queryAngle() - defaultAngleArray[LegNum][1], TargetLeg->ankleServo.queryAngle() - defaultAngleArray[LegNum][2]);
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+                }
+            }
+            else if (mode == 2)
+            {
+                Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
+                int LegNum = Target->ReceiveData.toInt() - 1;
+                if (LegNum < AddedNumofLeg)
+                {
+                    LegConfig *TargetLeg;
+                    xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                    while (1)
+                    {
+                        Target->TCP.printf("[LegAngleQuery]The real Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+                }
+            }
+            else if (mode == 3)
+            {
+                Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
+                int LegNum = Target->ReceiveData.toInt() - 1;
+                if (LegNum < AddedNumofLeg)
+                {
+                    LegConfig *TargetLeg;
+                    xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                    while (1)
+                    {
+                        Target->TCP.printf("[LegAngleQuery]The Raw Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle() - defaultAngleArray[LegNum][0], TargetLeg->kneeServo.queryAngle() - defaultAngleArray[LegNum][1], TargetLeg->ankleServo.queryAngle() - defaultAngleArray[LegNum][2]);
+                        Target->TCP.printf("[LegAngleQuery]The real Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
                 }
             }
             else
             {
-                Target->TCP.println("[LegAngleQuery]The Serial Number is out of range.");
+                Target->TCP.println("[LegAngleQuery]The mode you choose is out of range.");
                 Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
             }
             Target->ReceiveData = "";
