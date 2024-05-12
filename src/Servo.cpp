@@ -219,6 +219,18 @@ static Theta ikine(Position3 &pos) // 逆运动学 由末端坐标计算关节�
     Theta thetas(alpha1, alpha2, alpha3 - (PI / 2));
     return thetas;
 }
+void LegConfig::SetDampMode()
+{
+    this->hipServo.setDamping(defaultPower);
+    this->kneeServo.setDamping(defaultPower);
+    this->ankleServo.setDamping(defaultPower);
+}
+void LegConfig::SetDampMode(FSUS_POWER_T Power)
+{
+    this->hipServo.setDamping(Power);
+    this->kneeServo.setDamping(Power);
+    this->ankleServo.setDamping(Power);
+}
 void LegConfig::ikine(Position3 &pos)
 {
     float f1, f2, Lr, alpha_r, alpha1, alpha2, alpha3;
@@ -236,7 +248,7 @@ void LegConfig::ikine(Position3 &pos)
 /*运动学逆解*/
 void LegConfig::ikine(float x, float y, float z)
 {
-    
+
     float f1, f2, Lr, alpha_r, alpha1, alpha2, alpha3;
     f1 = sqrt(pow(x, 2) + pow(y, 2));
     f2 = z;
@@ -245,16 +257,14 @@ void LegConfig::ikine(float x, float y, float z)
     alpha1 = atan2(y, x);
     alpha2 = acos((pow(Lr, 2) + pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
     alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
-    if(z>0)
-    { 
-        alpha2 = alpha2-PI;
-        this->kneeAngle = R2D(alpha2);
-        
-       
-    }
-    else if(z<0)
+    if (z > 0)
     {
-        alpha2 = alpha2+PI;
+        alpha2 = alpha2 + PI;
+        this->kneeAngle = R2D(alpha2);
+    }
+    else if (z < 0)
+    {
+        alpha2 = alpha2 - PI;
         this->kneeAngle = R2D(alpha2);
     }
     else
@@ -263,7 +273,7 @@ void LegConfig::ikine(float x, float y, float z)
     }
     this->hipAngle = R2D(alpha1);
     // this->kneeAngle = R2D(alpha2);
-    this->ankleAngle = R2D(alpha3);
+    this->ankleAngle = R2D(alpha3 - PI / 2);
 }
 
 void LegConfig::LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval)
@@ -421,6 +431,44 @@ void LegPing_Task(void *pvParameters)
             DebugSerial.println("Some Servo is offline");
         }
         vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+void LegAngleQuery_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+    for (size_t i = 0; i < AddedNumofLeg; i++)
+    {
+        LegConfig *TargetLeg;
+        xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+        TargetLeg->SetDampMode();
+    }
+    Target->TCP.println("[Leg Power]All Leg is Set to Damp Mode.");
+    Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
+    while (1)
+    {
+        if (Target->ReceiveData != "")
+        {
+            Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
+            int LegNum = Target->ReceiveData.toInt() - 1;
+            if (LegNum < AddedNumofLeg)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                while (1)
+                {
+                    Target->TCP.printf("[LegAngleQuery]The Angle of the Leg you want to Query is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
+                    vTaskDelay(100 / portTICK_PERIOD_MS);
+                }
+            }
+            else
+            {
+                Target->TCP.println("[LegAngleQuery]The Serial Number is out of range.");
+                Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
+            }
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
     }
 }
 void LegPowerDown_Task(void *pvParameters)
