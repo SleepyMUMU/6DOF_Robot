@@ -8,7 +8,7 @@
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
 #include <mymath.h>
-#include "../TCPConfig/TCPConfig.h"
+#include "TCPConfig.h"
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2

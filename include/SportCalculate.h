@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include <mymath.h>
+#include <FashionStar_UartServo.h>
+#include <FashionStar_UartServoProtocol.h>
 
 class Rob_Pos
 {
@@ -14,5 +16,5 @@ private:
     Theta theta;
 public:
     void Init();
-}
+};
 #endif                                                                                                                                          // DEBUG

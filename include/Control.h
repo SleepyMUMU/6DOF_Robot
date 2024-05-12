@@ -1,7 +1,7 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 #include <TCPConfig.h>
-#include <../math/mymath.h>
+#include <mymath.h>
 
 #define PI 3.14159f
 #define LEN_HtoK 84.0f  // L1髋长度
