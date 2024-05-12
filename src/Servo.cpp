@@ -216,7 +216,7 @@ static Theta ikine(Position3 &pos) // 逆运动学 由末端坐标计算关节�
     alpha2 = acos((pow(Lr, 2) + pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
     alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
     // Theta thetas(alpha1, alpha2 - alpha_r, -(alpha2 + alpha3));
-    Theta thetas(alpha1, alpha2, alpha3);
+    Theta thetas(alpha1, alpha2, alpha3 - (PI / 2));
     return thetas;
 }
 void LegConfig::ikine(Position3 &pos)
@@ -231,7 +231,7 @@ void LegConfig::ikine(Position3 &pos)
     alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
     this->hipAngle = R2D(alpha1);
     this->kneeAngle = R2D(alpha2);
-    this->ankleAngle = R2D(alpha3);
+    this->ankleAngle = R2D(alpha3 - (PI / 2));
 }
 /*运动学逆解*/
 void LegConfig::ikine(float x, float y, float z)
@@ -353,7 +353,8 @@ void LegCrtl_Task(void *pvParameters)
                         sscanf(Target->ReceiveData.c_str(), "%f %f %f", &x, &y, &z);
                         Target->TCP.printf("[LegCrtl]The x,y,z of the Leg you want to control is %f,%f,%f.\n", x, y, z);
                         TargetLeg->LegMoving(x, y, z);
-                        Target->TCP.println("[LegCrtl]The Leg is moving.");
+                        Target->TCP.printf("[LegCrtl]The Leg is moving to Angle:%f,%f,%f.\n", TargetLeg->hipAngle, TargetLeg->kneeAngle, TargetLeg->ankleAngle);
+                        Target->TCP.println("");
                         Target->ReceiveData = "";
                         LegCrtlFlag = false;
                         Target->Terminal_TaskHandle = NULL;
