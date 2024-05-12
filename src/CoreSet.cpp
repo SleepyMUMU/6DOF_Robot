@@ -81,7 +81,16 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->Terminal_TaskHandle = taskHandle;
                     Target->truncateStream = true;
                 }
-
+                else if(Target->ReceiveData == "moving")
+                {
+                    Target->TCP.println("[I][RunTime]Leg Moving.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(LegMoving_Task, "LegMoving", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
+           
                 else if (Target->ReceiveData == "sendmsg")
                 {
                     Target->TCP.println("[I][RunTime]Send Message To Other Client.");

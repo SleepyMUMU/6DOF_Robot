@@ -27,63 +27,7 @@ float debugAngle[5][3] = {
     {197.4, 113.9, -121.9},
     {157.5, 0, -140.8}};
 
-// FSUS_Protocol debugServo(&debugSerial, debugBaundRate);
 
-// FSUS_Servo debug1Hip(Group1_1HipServo, &debugServo);
-// FSUS_Servo debug2Hip(Group1_1KneeServo, &debugServo);
-// FSUS_Servo debug3Hip(Group1_1AnkleServo, &debugServo);
-
-// void MyServo::Servo_Init()
-// {
-//     debugServo.init(&debugSerial, debugBaundRate, debugSerial_Rx, debugSerial_Tx);
-//     debug1Hip.init();
-//     debug2Hip.init();
-//     debug3Hip.init();
-// }
-
-// void MyServo::Servo_Check()
-// {
-
-//     Servo1 = debug1Hip.ping();
-//     Servo2 = debug2Hip.ping();
-//     Servo3 = debug3Hip.ping();
-//     if (Servo1)
-//     {
-//         Serial.println("Servo1 is online");
-//     }
-//     else
-//     {
-//         Serial.println("Servo1 is offline");
-//     }
-
-//     if (Servo2)
-//     {
-//         Serial.println("Servo2 is online");
-//     }
-//     else
-//     {
-//         Serial.println("Servo2 is offline");
-//     }
-
-//     if (Servo3)
-//     {
-//         Serial.println("Servo3 is online");
-//     }
-//     else
-//     {
-//         Serial.println("Servo3 is offline");
-//     }
-// }
-
-// 弃用Config，直接传递参数进Init
-//  LegConfig::LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3)
-//  {
-//      this->serial = serial;       // 串口ID
-//      this->ServoBaud = ServoBaud; // 舵机波特率
-//      this->ServoID = ServoID;     // 舵机ID
-//      this->ServoID2 = ServoID2;   // 舵机ID2
-//      this->ServoID3 = ServoID3;   // 舵机ID3
-//  }
 u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
 
@@ -292,7 +236,19 @@ void LegConfig::LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval)
     kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, intertval);
     ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, intertval);
 }
+void LegConfig::LegMoving()
+{
+    int i; // Declare the variable "i"
+    for(i = 0; i < 5; i++) // Fix the for loop condition
+    {
+        ikine(debugAngle[i][0], debugAngle[i][1], debugAngle[i][2]);
+        hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, defaultTime);
+        kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, defaultTime);
+        ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
+        delay(2000);
+    }
 
+}
 void LegConfig::LegMoving(float x, float y, float z)
 {
 
@@ -560,6 +516,35 @@ void LegPowerDown_Task(void *pvParameters)
             {
                 Target->TCP.println("[LegPowerDown]The Serial Number is out of range.");
                 Target->TCP.println("[LegPowerDown]Please enter the Serial Number of the Leg you want to PowerDown.");
+            }
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
+    }
+}
+void LegMoving_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+    Target->TCP.println("[LegMoving]Please enter the Serial Number of the Leg you want to Moving.");
+    while (1)
+    {
+        if (Target->ReceiveData != "")
+        {
+            Target->TCP.printf("[LegMoving]The Serial Number of the Leg you want to Moving is %s.\n", Target->ReceiveData.c_str());
+            int LegNum = Target->ReceiveData.toInt() - 1;
+            Target->ReceiveData = "";
+            if (LegNum < AddedNumofLeg)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                Target->TCP.println("[LegMoving]Please enter the x,y,z of the Leg you want to Moving.");
+                TargetLeg->LegMoving();
+                vTaskDelete(NULL);
+            }
+            else
+            {
+                Target->TCP.println("[LegMoving]The Serial Number is out of range.");
+                Target->TCP.println("[LegMoving]Please enter the Serial Number of the Leg you want to Moving.");
             }
             Target->ReceiveData = "";
         }

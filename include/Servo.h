@@ -136,6 +136,7 @@ public:
     void ikine(Position3 &pos);
     // 正运动学解算
     void ikine(float x, float y, float z); // 逆运动学逆解                                               // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
+    void LegMoving(); // 移动舵机
     void LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval);
     void LegMoving(float x, float y, float z);
 };
@@ -147,4 +148,5 @@ void LegPowerDown_Task(void *pvParameters);
 void LegCrtl_Task(void *pvParameters);
 void LegSetAngle_task(void *pvParameters);
 void LegAngleQuery_Task(void *pvParameters);
+void LegMoving_Task(void *pvParameters);
 #endif
