@@ -18,66 +18,73 @@ u8_t defaultLegServoSerial[7][3] = {
     {13, 14, 15},
     {16, 17, 18}};
 
-float defa
 
-    // FSUS_Protocol debugServo(&debugSerial, debugBaundRate);
+float debugAngle[5][3] = {
 
-    // FSUS_Servo debug1Hip(Group1_1HipServo, &debugServo);
-    // FSUS_Servo debug2Hip(Group1_1KneeServo, &debugServo);
-    // FSUS_Servo debug3Hip(Group1_1AnkleServo, &debugServo);
+    {227.9, 0, -121.9},
+    {136.4, 78.75, -140.8},
+    {136.4, 78.75, -140.8},
+    {197.4, 113.9, -121.9},
+    {157.5, 0, -140.8}};
 
-    // void MyServo::Servo_Init()
-    // {
-    //     debugServo.init(&debugSerial, debugBaundRate, debugSerial_Rx, debugSerial_Tx);
-    //     debug1Hip.init();
-    //     debug2Hip.init();
-    //     debug3Hip.init();
-    // }
+// FSUS_Protocol debugServo(&debugSerial, debugBaundRate);
 
-    // void MyServo::Servo_Check()
-    // {
+// FSUS_Servo debug1Hip(Group1_1HipServo, &debugServo);
+// FSUS_Servo debug2Hip(Group1_1KneeServo, &debugServo);
+// FSUS_Servo debug3Hip(Group1_1AnkleServo, &debugServo);
 
-    //     Servo1 = debug1Hip.ping();
-    //     Servo2 = debug2Hip.ping();
-    //     Servo3 = debug3Hip.ping();
-    //     if (Servo1)
-    //     {
-    //         Serial.println("Servo1 is online");
-    //     }
-    //     else
-    //     {
-    //         Serial.println("Servo1 is offline");
-    //     }
+// void MyServo::Servo_Init()
+// {
+//     debugServo.init(&debugSerial, debugBaundRate, debugSerial_Rx, debugSerial_Tx);
+//     debug1Hip.init();
+//     debug2Hip.init();
+//     debug3Hip.init();
+// }
 
-    //     if (Servo2)
-    //     {
-    //         Serial.println("Servo2 is online");
-    //     }
-    //     else
-    //     {
-    //         Serial.println("Servo2 is offline");
-    //     }
+// void MyServo::Servo_Check()
+// {
 
-    //     if (Servo3)
-    //     {
-    //         Serial.println("Servo3 is online");
-    //     }
-    //     else
-    //     {
-    //         Serial.println("Servo3 is offline");
-    //     }
-    // }
+//     Servo1 = debug1Hip.ping();
+//     Servo2 = debug2Hip.ping();
+//     Servo3 = debug3Hip.ping();
+//     if (Servo1)
+//     {
+//         Serial.println("Servo1 is online");
+//     }
+//     else
+//     {
+//         Serial.println("Servo1 is offline");
+//     }
 
-    // 弃用Config，直接传递参数进Init
-    //  LegConfig::LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3)
-    //  {
-    //      this->serial = serial;       // 串口ID
-    //      this->ServoBaud = ServoBaud; // 舵机波特率
-    //      this->ServoID = ServoID;     // 舵机ID
-    //      this->ServoID2 = ServoID2;   // 舵机ID2
-    //      this->ServoID3 = ServoID3;   // 舵机ID3
-    //  }
-    u8_t AddedNumofLeg = 0;
+//     if (Servo2)
+//     {
+//         Serial.println("Servo2 is online");
+//     }
+//     else
+//     {
+//         Serial.println("Servo2 is offline");
+//     }
+
+//     if (Servo3)
+//     {
+//         Serial.println("Servo3 is online");
+//     }
+//     else
+//     {
+//         Serial.println("Servo3 is offline");
+//     }
+// }
+
+// 弃用Config，直接传递参数进Init
+//  LegConfig::LegConfig(HardwareSerial *serial, uint32_t ServoBaud, uint8_t ServoID, uint8_t ServoID2, uint8_t ServoID3)
+//  {
+//      this->serial = serial;       // 串口ID
+//      this->ServoBaud = ServoBaud; // 舵机波特率
+//      this->ServoID = ServoID;     // 舵机ID
+//      this->ServoID2 = ServoID2;   // 舵机ID2
+//      this->ServoID3 = ServoID3;   // 舵机ID3
+//  }
+u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
 
 LegConfig::LegConfig()
