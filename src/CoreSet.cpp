@@ -93,7 +93,7 @@ void tcpRunTimeEnvTask(void *pvParam)
                 else if (Target->ReceiveData == "postest")
                 {
                     Target->TCP.println("[I][RunTime]Pos Test.");
-                    xTaskCreate(RobotPos_Task, "PosTest", 4096, Target, 1, &taskHandle);
+                    xTaskCreate(RobotPos_Task, "PosTest", 4096, Target, 1, NULL);
                 }
 
                 else if (Target->ReceiveData == "sendmsg")
