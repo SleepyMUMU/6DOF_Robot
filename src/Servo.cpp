@@ -24,6 +24,20 @@ float debugAngle[5][3] = {
     {136.4, 78.75, -140.8},
     {157.5, 0, -140.8},
 };
+#define PosDownSer 0
+float defaultPosition[10][3] = {
+    {
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+        {},
+    };
 
 u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
@@ -229,9 +243,9 @@ void LegConfig::ikine(float x, float y, float z)
 void LegConfig::LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval)
 {
     ikine(x, y, z);
-    hipServo.setAngle(this->hipAngle + defaultHipAngle, intertval);
-    kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, intertval);
-    ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, intertval);
+    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, intertval);
+    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, intertval);
+    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, intertval);
 }
 void LegConfig::LegMoving()
 {
@@ -239,9 +253,9 @@ void LegConfig::LegMoving()
     for (i = 0; i < 3; i++) // Fix the for loop condition
     {
         ikine(debugAngle[i][0], debugAngle[i][1], debugAngle[i][2]);
-        hipServo.setAngle(this->hipAngle + defaultHipAngle, defaultTime);
-        kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, defaultTime);
-        ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, defaultTime);
+        hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, defaultTime);
+        kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, defaultTime);
+        ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
         delay(2000);
     }
 }
@@ -249,9 +263,9 @@ void LegConfig::LegMoving(float x, float y, float z)
 {
 
     ikine(x, y, z);
-    hipServo.setAngle(this->hipAngle + defaultHipAngle, defaultTime);
-    kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, defaultTime);
-    ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, defaultTime);
+    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, defaultTime);
+    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, defaultTime);
+    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
 }
 void LegSetAngle_task(void *pvParameters)
 {
@@ -383,9 +397,9 @@ void LegPing_Task(void *pvParameters)
 
         if (hipServo && kneeServo && ankleServo)
         {
-            // Target->LegSetHipAngle(defaultHipAngle, 2);
-            // Target->LegSetKneeAngle(defaultKneeAngle, 2);
-            // Target->LegSetAnkleAngle(defaultAnkleAngle, 2);
+            Target->LegSetHipAngle(defaultLeg1HipAngle, 2);
+            Target->LegSetKneeAngle(defaultLeg1KneeAngle, 2);
+            Target->LegSetAnkleAngle(defaultLeg1AnkleAngle, 2);
         }
         else
         {
@@ -560,6 +574,24 @@ void LegMoving_Task(void *pvParameters)
         }
         vTaskDelay(1);
     }
+}
+
+void RobotPos_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+    Target->TCP.println("[RobotPos]set all leg to the position of the robot.");
+    Target->TCP.println("[RobotPos]Please enter PosSerial Number of the Leg you want to Moving,default is 0.");
+    while (Target->ReceiveData == "")
+        ;
+    u8_t PosSerial = Target->ReceiveData.toInt();
+    for (size_t i = 0; i < AddedNumofLeg; i++)
+    {
+        LegConfig *TargetLeg;
+        xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+        TargetLeg->LegMoving(defaultPosition[PosSerial][0], defaultPosition[PosSerial][1], defaultPosition[PosSerial][2]);
+    }
+    delay(defaultTime);
+    vTaskDelete(NULL);
 }
 // void Legdebug_Task(void *pvParameters)
 // {
