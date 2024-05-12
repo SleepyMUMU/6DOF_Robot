@@ -20,8 +20,8 @@ u8_t defaultLegServoSerial[7][3] = {
 
 float debugAngle[5][3] = {
 
-    {288.5,0,36.75},
-    {136.4,78.75,-140.8},
+    {288.5, 0, 36.75},
+    {136.4, 78.75, -140.8},
     {157.5, 0, -140.8},
 };
 
@@ -229,9 +229,9 @@ void LegConfig::ikine(float x, float y, float z)
 void LegConfig::LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval)
 {
     ikine(x, y, z);
-    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, intertval);
-    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, intertval);
-    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, intertval);
+    hipServo.setAngle(this->hipAngle + defaultHipAngle, intertval);
+    kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, intertval);
+    ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, intertval);
 }
 void LegConfig::LegMoving()
 {
@@ -239,9 +239,9 @@ void LegConfig::LegMoving()
     for (i = 0; i < 3; i++) // Fix the for loop condition
     {
         ikine(debugAngle[i][0], debugAngle[i][1], debugAngle[i][2]);
-        hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, defaultTime);
-        kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, defaultTime);
-        ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
+        hipServo.setAngle(this->hipAngle + defaultHipAngle, defaultTime);
+        kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, defaultTime);
+        ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, defaultTime);
         delay(2000);
     }
 }
@@ -249,9 +249,9 @@ void LegConfig::LegMoving(float x, float y, float z)
 {
 
     ikine(x, y, z);
-    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, defaultTime);
-    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, defaultTime);
-    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
+    hipServo.setAngle(this->hipAngle + defaultHipAngle, defaultTime);
+    kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, defaultTime);
+    ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, defaultTime);
 }
 void LegSetAngle_task(void *pvParameters)
 {
@@ -383,9 +383,9 @@ void LegPing_Task(void *pvParameters)
 
         if (hipServo && kneeServo && ankleServo)
         {
-            Target->LegSetHipAngle(defaultLeg1HipAngle, 2);
-            Target->LegSetKneeAngle(defaultLeg1KneeAngle, 2);
-            Target->LegSetAnkleAngle(defaultLeg1AnkleAngle, 2);
+            // Target->LegSetHipAngle(defaultHipAngle, 2);
+            // Target->LegSetKneeAngle(defaultKneeAngle, 2);
+            // Target->LegSetAnkleAngle(defaultAnkleAngle, 2);
         }
         else
         {
