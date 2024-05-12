@@ -53,11 +53,19 @@ void tcpRunTimeEnvTask(void *pvParam)
                     TaskHindBind(&taskHandle, Target);
                     Target->Terminal_TaskHandle = taskHandle;
                 }
-
+                else if (Target->ReceiveData == "legctrl")
+                {
+                    Target->TCP.println("[I][RunTime]Leg Control.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(LegCrtl_Task, "LegControl", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
+                
                 else if (Target->ReceiveData == "sendmsg")
                 {
                     Target->TCP.println("[I][RunTime]Send Message To Other Client.");
-
                     TaskHandle_t taskHandle = NULL;
                     xTaskCreate(tcpCom_Task, "tcpCom_Task", 4096, Target, 1, &taskHandle);
                     TaskHindBind(&taskHandle, Target);
@@ -109,7 +117,7 @@ void tcpCom_Task(void *pvParam)
 {
     TCPConfig *Target = (TCPConfig *)pvParam;
     TCPConfig *COMTarget = NULL;
-    xQueueReceive(Target->TCPQueue, &COMTarget, 0);
+    xQueuePeek(Target->TCPQueue, &COMTarget, 0);
     if (COMTarget == NULL)
     {
         Target->TCP.printf("[E][COM]No COM Target.\n");

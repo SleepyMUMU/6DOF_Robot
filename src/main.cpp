@@ -64,7 +64,7 @@ void setup()
   Leg4.LegInit(protocol1, 4);
   Leg5.LegInit(protocol1, 5);
   Leg6.LegInit(protocol1, 6);
-  delay(1000); // 延时
+
   // 生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));

@@ -203,37 +203,116 @@ void LegConfig::fkine(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle,
     z = -L3 * sin(kneeAngleRad + ankleAngleRad) - L2 * sin(kneeAngleRad);
 }
 
+static Theta ikine(Position3 &pos) // 逆运动学 由末端坐标计算关节角
+{
+    static Position3 pos1;
+    static float f1, f2, Lr, alpha_r, alpha1, alpha2, alpha3;
+    pos1 = pos;
+    f1 = sqrt(pow(pos1.x, 2) + pow(pos1.y, 2));
+    f2 = pos1.z;
+    Lr = sqrt(pow(f1 - LEN_HtoK, 2) + pow(pos1.z, 2));
+    alpha_r = atan2(-pos1.z, f1 - LEN_HtoK);
+    alpha1 = atan2(pos1.y, pos1.x);
+    alpha2 = acos((pow(Lr, 2) + pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
+    alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
+    // Theta thetas(alpha1, alpha2 - alpha_r, -(alpha2 + alpha3));
+    Theta thetas(alpha1, alpha2, alpha3);
+    return thetas;
+}
+void LegConfig::ikine(Position3 &pos)
+{
+    float f1, f2, Lr, alpha_r, alpha1, alpha2, alpha3;
+    f1 = sqrt(pow(pos.x, 2) + pow(pos.y, 2));
+    f2 = pos.z;
+    Lr = sqrt(pow(f1 - LEN_HtoK, 2) + pow(pos.z, 2));
+    alpha_r = atan2(-pos.z, f1 - LEN_HtoK);
+    alpha1 = atan2(pos.y, pos.x);
+    alpha2 = acos((pow(Lr, 2) + pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
+    alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
+    this->hipAngle = R2D(alpha1);
+    this->kneeAngle = R2D(alpha2);
+    this->ankleAngle = R2D(alpha3);
+}
 /*运动学逆解*/
 void LegConfig::ikine(float x, float y, float z)
 {
-    // 机械臂的逆运动学解算
-    this->hipAngle = atan2(y, x) * 180 / PI;
-    float f1 = sqrt(pow(x, 2) + pow(y, 2));
-    float f2 = z;
-    float temp = L1 - f1;
-    this->kneeAngle = (-atan(temp / f2) + asin(pow(f1, 2) + pow(f2, 2) + pow(L1, 2) + pow(L2, 2) - pow(L3, 2) - 2 * f1 * L1) / (2 * L2 * sqrt(pow((f1 - L1), 2) + pow(f2, 2)))) * 180 / PI;
-    this->ankleAngle = acos((pow(temp, 2) + pow(f2, 2) - pow(L2, 2) - pow(L3, 2)) / (2 * L2 * L3)) * 180 / PI;
+    float f1, f2, Lr, alpha_r, alpha1, alpha2, alpha3;
+    f1 = sqrt(pow(x, 2) + pow(y, 2));
+    f2 = z;
+    Lr = sqrt(pow(f1 - LEN_HtoK, 2) + pow(z, 2));
+    alpha_r = atan2(-z, f1 - LEN_HtoK);
+    alpha1 = atan2(y, x);
+    alpha2 = acos((pow(Lr, 2) + pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * Lr * LEN_KtoA)) - atan2(f2, LEN_HtoK - f1);
+    alpha3 = acos((pow(Lr, 2) - pow(LEN_KtoA, 2) - pow(LEN_AtoF, 2)) / (2 * LEN_KtoA * LEN_AtoF));
+    this->hipAngle = R2D(alpha1);
+    this->kneeAngle = R2D(alpha2);
+    this->ankleAngle = R2D(alpha3);
 }
 
-void LegConfig::LegMoving(float x, float y, float z, uint8_t LegNum)
+void LegConfig::LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval)
 {
-    LegConfig *Target;
-    xQueueReceive(LegQueue[LegNum], &Target, portMAX_DELAY);
-    Target->ikine(x, y, z);
-    Target->hipServo.setAngle(Target->hipAngle + defaultLeg1HipAngle, 1000);
-    Target->kneeServo.setAngle(Target->kneeAngle + defaultLeg1KneeAngle, 1000);
-    Target->ankleServo.setAngle(-Target->ankleAngle + defaultLeg1AnkleAngle, 1000);
+    ikine(x, y, z);
+    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, intertval);
+    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, intertval);
+    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, intertval);
 }
 
 void LegConfig::LegMoving(float x, float y, float z)
 {
 
     ikine(x, y, z);
-    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, 1000);
-    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, 1000);
-    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, 1000);
+    hipServo.setAngle(this->hipAngle + defaultLeg1HipAngle, defaultTime);
+    kneeServo.setAngle(this->kneeAngle + defaultLeg1KneeAngle, defaultTime);
+    ankleServo.setAngle(-this->ankleAngle + defaultLeg1AnkleAngle, defaultTime);
 }
+void LegCrtl_Task(void *pvParameters)
+{
+    bool LegCrtlFlag = true;
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应TCPConfig对象
+    Target->TCP.println("[LegCrtl]Please enter the Serial Number of the Leg you want to control.");
+    while (LegCrtlFlag)
+    {
+        if (Target->ReceiveData != "")
+        {
+            Target->TCP.printf("[LegCrtl]The Serial Number of the Leg you want to control is %s.\n", Target->ReceiveData.c_str());
+            int LegNum = Target->ReceiveData.toInt() - 1;
+            Target->ReceiveData = "";
+            if (LegNum < AddedNumofLeg)
+            {
+                LegConfig *TargetLeg;
+                Target->TCP.println("[LegCrtl]Loading the date of the leg...");
+                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                Target->TCP.println("[LegCrtl]Please enter the x,y,z of the Leg you want to control.");
 
+                while (LegCrtlFlag)
+                {
+                    if (Target->ReceiveData != "")
+                    {
+                        Target->TCP.printf("[LegCrtl]The x,y,z of the Leg you want to control is %s.\n", Target->ReceiveData.c_str());
+                        float x, y, z;
+                        sscanf(Target->ReceiveData.c_str(), "%f,%f,%f", &x, &y, &z);
+                        TargetLeg->LegMoving(x, y, z);
+                        Target->TCP.println("[LegCrtl]The Leg is moving.");
+                        Target->ReceiveData = "";
+                        LegCrtlFlag = false;
+                        Target->Terminal_TaskHandle = NULL;
+                        Target->truncateStream = false;
+                        break;
+                    }
+                    vTaskDelay(1);
+                }
+            }
+            else
+            {
+                Target->TCP.println("[LegCrtl]The Serial Number is out of range.");
+                Target->TCP.println("[LegCrtl]Please enter the Serial Number of the Leg you want to control.");
+            }
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
+    }
+    vTaskDelete(NULL);
+}
 void LegPing_Task(void *pvParameters)
 {
     LegConfig *Target = (LegConfig *)pvParameters; // 接收对应LegConfig对象
@@ -293,16 +372,35 @@ void LegPowerDown_Task(void *pvParameters)
         {
             Target->TCP.printf("[LegPowerDown]The Serial Number of the Leg you want to PowerDown is %s.\n", Target->ReceiveData.c_str());
             int LegNum = Target->ReceiveData.toInt() - 1;
-            if (LegNum < AddedNumofLeg)
+            if (Target->ReceiveData == "all")
+            {
+                for (size_t i = 0; i < AddedNumofLeg; i++)
+                {
+                    LegConfig *TargetLeg;
+
+                    xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+                    TargetLeg->LegPowerDown();
+                    Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", i);
+                }
+                Target->Terminal_TaskHandle = NULL;
+                Target->truncateStream = false;
+                vTaskDelete(NULL);
+            }
+            else if (LegNum < AddedNumofLeg)
             {
                 LegConfig *TargetLeg;
-                xQueueReceive(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
                 TargetLeg->LegPowerDown();
-                Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", LegNum);
+                Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", LegNum + 1);
+                Target->Terminal_TaskHandle = NULL;
+                Target->truncateStream = false;
+                vTaskDelete(NULL);
             }
+
             else
             {
                 Target->TCP.println("[LegPowerDown]The Serial Number is out of range.");
+                Target->TCP.println("[LegPowerDown]Please enter the Serial Number of the Leg you want to PowerDown.");
             }
             Target->ReceiveData = "";
         }

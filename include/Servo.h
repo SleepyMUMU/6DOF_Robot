@@ -9,6 +9,7 @@
 #include <FreeRTOSConfig.h>
 #include <mymath.h>
 #include "TCPConfig.h"
+#include "Control.h"
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -127,9 +128,11 @@ public:
 
     uint8_t ThreeBool2Bin(bool hipServo, bool kneeServo, bool ankleServo);
     void bin2ThreeBool(uint8_t bin, bool &hipServo, bool &kneeServo, bool &ankleServo);
-    void fkine(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z); // 正运动学解算
-    void ikine(float x, float y, float z);                                                                                              // 逆运动学逆解                                               // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
-    void LegMoving(float x, float y, float z, uint8_t LegNum);
+    void fkine(FSUS_SERVO_ANGLE_T hipAngle, FSUS_SERVO_ANGLE_T kneeAngle, FSUS_SERVO_ANGLE_T ankleAngle, float &x, float &y, float &z);
+    void ikine(Position3 &pos);
+    // 正运动学解算
+    void ikine(float x, float y, float z); // 逆运动学逆解                                               // 选择腿，jointNum为关节的编号，1为hip，2为knee，3为ankle
+    void LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval);
     void LegMoving(float x, float y, float z);
 };
 
@@ -137,5 +140,5 @@ extern u8_t AddedNumofLeg;
 extern QueueHandle_t LegQueue[numofLeg];
 
 void LegPowerDown_Task(void *pvParameters);
-
+void LegCrtl_Task(void *pvParameters);
 #endif

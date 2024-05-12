@@ -27,6 +27,11 @@ static Position3 fkine(Theta thetas) // 正运动学 由关节角计算末端坐
     return position;
 }
 
+int a()
+{
+    return 0;
+}
+
 static Theta ikine(Position3 &pos) // 逆运动学 由末端坐标计算关节角
 {
     static Position3 pos1;

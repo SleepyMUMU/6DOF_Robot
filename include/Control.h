@@ -19,5 +19,9 @@ public:
 };
 
 void debugIK(void *PvParameters);
+float R2D(float rad);
+float D2R(float deg);
+
+
 
 #endif
