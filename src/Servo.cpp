@@ -533,8 +533,22 @@ void LegMoving_Task(void *pvParameters)
             {
                 LegConfig *TargetLeg;
                 xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
-                Target->TCP.println("[LegMoving]Please enter the x,y,z of the Leg you want to Moving.");
-                TargetLeg->LegMoving();
+                Target->TCP.printf("loop? y/n\n");
+                while (Target->ReceiveData == "")
+                    ;
+
+                if (Target->ReceiveData == "y")
+                {
+                    while (1)
+                    {
+                        TargetLeg->LegMoving();
+                    }
+                }
+                else if (Target->ReceiveData == "n")
+                {
+                    TargetLeg->LegMoving();
+                }
+
                 vTaskDelete(NULL);
             }
             else
