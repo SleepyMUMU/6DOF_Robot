@@ -14,7 +14,8 @@
 #include <TCPConfig.h>
 // #define CONFIG_FREERTOS_USE_TRACE_FACILITY
 // #define configUSE_TRACE_FACILITY 1
-#include <Control.h>
+#include "Control.h"
+
 
 void coreSetEnable();
 void tcpRunTimeEnvTask(void *pvParam);

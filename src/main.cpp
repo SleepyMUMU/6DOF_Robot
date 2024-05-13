@@ -1,6 +1,7 @@
 #include <TCPConfig.h>
 #include <Arduino.h>
 #include <ArduinoOTA.h>
+#include <Control.h>
 #include <WiFi.h>
 #include <UARTConfig.h>
 #include <WiFiConfig.h>
@@ -12,21 +13,23 @@
 #include <Servo.h>
 #include <FashionStar_UartServoProtocol.h>
 #include <FashionStar_UartServo.h>
-
-#include <Control.h>
+#include <Robot.h>
 
 WiFiConfig WLAN;
 TCPConfig MUMU;
 TCPConfig JIAHONG;
 
-FSUS_Protocol protocol1(&Serial1, 115200);
-FSUS_Protocol protocol2(&Serial2, 115200);
+FSUS_Protocol protocol1(&ServoSerial1, ServoSerial1Baud);
+FSUS_Protocol protocol2(&ServoSerial2, ServoSerial2Baud);
+
 LegConfig Leg1; // 1号腿对象
 LegConfig Leg2; // 2号腿对象
 LegConfig Leg3; // 3号腿对象
 LegConfig Leg4; // 4号腿对象
 LegConfig Leg5; // 5号腿对象
 LegConfig Leg6; // 6号腿对象
+
+Robot robot(Leg1, Leg2, Leg3, Leg4, Leg5, Leg6);
 
 uint8_t ReciveBuffer[200]; // 接收缓冲区
 float ReciveData;          // 接收数据
@@ -35,20 +38,8 @@ uint8_t Num_End;           // 数据末尾
 uint8_t Flag;              // 符号标志位
 uint8_t DataLength;        // 数据长度
 
-Theta Test(0, 0, 0);
-Theta Test1(0, 0, 0);
-
-Position3 Test2(0, 0, 0);
-Position3 Test3(0, 0, 0);
-
-Move_Ctl TestCrt;
-
 void setup()
 {
-
-  // TestCrt.Init();
-
-  // TestCrt.ikCaculateTest(Test2);
 
   coreSetEnable();
   UARTInit();          // 初始化串口
@@ -72,7 +63,6 @@ void setup()
   // 生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
-  xQueueSend(MUMU.LegQueue, &Test, 0);
 
   // 生成一个消息队列，将对象MUMU和JIAHONG的指针传递给对方消息队列
   MUMU.TCPQueue = xQueueCreate(1, sizeof(TCPConfig *));

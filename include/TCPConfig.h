@@ -30,6 +30,7 @@
 class TCPConfig
 {
 public:
+
     WiFiClient TCP;
     IPAddress serverIP;
     u16_t serverPort;
