@@ -30,6 +30,7 @@ bool WiFiConfig::WiFiInit()
             return false;
         }
     }
+    return true;
 }
 
 bool WiFiConfig::WiFiInit(String ssid, String passward, IPAddress localIP, IPAddress gateway, IPAddress subnetMask, IPAddress primaryDNS, IPAddress secondaryDNS)
@@ -61,6 +62,7 @@ bool WiFiConfig::WiFiInit(String ssid, String passward, IPAddress localIP, IPAdd
             return false;
         }
     }
+    return true;
 }
 
 bool WiFiConfig::WiFiInit(String ssid, String passward)
@@ -88,6 +90,7 @@ bool WiFiConfig::WiFiInit(String ssid, String passward)
             return false;
         }
     }
+    return true;
 }
 
 void WiFiConfig::OTAconfig()

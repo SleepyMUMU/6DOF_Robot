@@ -51,8 +51,12 @@ void setup()
   // TestCrt.ikCaculateTest(Test2);
 
   coreSetEnable();
-  UARTInit();       // 初始化串口
-  WLAN.WiFiInit();  // 初始化WiFi
+  UARTInit();          // 初始化串口
+  if (WLAN.WiFiInit()) // 初始化WiFi
+  {
+    DebugSerial.println("WiFi Init Success");
+  }
+
   WLAN.OTAconfig(); // 初始化OTA
 
   protocol1.init(&ServoSerial1, ServoSerial1Baud, ServoSerial1Rx, ServoSerial1Tx);

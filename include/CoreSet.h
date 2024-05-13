@@ -20,7 +20,7 @@ void coreSetEnable();
 void tcpRunTimeEnvTask(void *pvParam);
 bool showStateofRunningTask(TaskHandle_t TaskHandle, Stream *stream);
 void RobotPingTest(void *pvParam);
-size_t TaskHindBind(TaskHandle_t *pxCreatedTask, void *pvParam);
+void TaskHindBind(TaskHandle_t *pxCreatedTask, void *pvParam);
 void tcpRunTimeEnvTaskCrtl(void *pvParam);
 void tcpCom_Task(void *pvParam);
 void showTask(void *pvParam);

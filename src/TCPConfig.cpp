@@ -1,6 +1,5 @@
 #include "TCPConfig.h"
 
-
 TCPConfig::TCPConfig()
 {
     this->serverIP = defaultServerIP;
@@ -36,6 +35,7 @@ bool TCPConfig::TCPInit()
             return false;
         }
     }
+    return true;
 }
 
 // 连接指定服务器
@@ -60,6 +60,7 @@ bool TCPConfig::TCPInit(IPAddress serverIP, u16_t serverPort)
             return false;
         }
     }
+    return true;
 }
 
 void TCPServer_Task(void *pvParam)
@@ -118,8 +119,8 @@ void TCPInit_Task(void *pvParam)
                 DebugSerial.println("[TCP Task]TCPInit Fail."); // TCP连接失败
             }
 
-            xTaskCreate(TCPServer_Task, String(Target->serverName + "_TCP_Server").c_str(), 4096, Target, 1, &(Target->Server_TaskHandle));     // 创建TCP服务器任务
-            xTaskCreate(tcpRunTimeEnvTask, String(Target->serverName + "_RunTimeEnv").c_str(), 4096, Target, 1, &(Target->RunTime_TaskHandle)); // 创建TCP运行环境任务
+            xTaskCreate(TCPServer_Task, String(Target->serverName + "_TCP_Server").c_str(), 4096, Target, 1, &(Target->Server_TaskHandle));              // 创建TCP服务器任务
+            xTaskCreate(tcpRunTimeEnvTask, String(Target->serverName + "_RunTimeEnv").c_str(), 4096, Target, 1, &(Target->RunTime_TaskHandle));          // 创建TCP运行环境任务
             xTaskCreate(tcpRunTimeEnvTaskCrtl, String(Target->serverName + "_RunTimeEnvCrtl").c_str(), 4096, Target, 1, &(Target->Terminal_TaskHandle)); // 创建TCP运行环境任务控制任务
 
             if (showStateofRunningTask(Target->RunTime_TaskHandle, &(Target->TCP)))

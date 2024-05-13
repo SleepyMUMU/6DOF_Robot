@@ -186,7 +186,7 @@ void tcpCom_Task(void *pvParam)
     }
 }
 
-size_t TaskHindBind(TaskHandle_t *pxCreatedTask, void *pvParam) // 查询是否有任务，有则返回任务序号，无则添加任务
+void TaskHindBind(TaskHandle_t *pxCreatedTask, void *pvParam) // 查询是否有任务，有则返回任务序号，无则添加任务
 {
     TCPConfig *Target = (TCPConfig *)pvParam;
     bool flag = false; // 任务是否已经存在
@@ -195,7 +195,7 @@ size_t TaskHindBind(TaskHandle_t *pxCreatedTask, void *pvParam) // 查询是否�
         if (Target->TaskList[i] == *pxCreatedTask)
         {
             flag = true;
-            return i;
+
             break;
         }
     }

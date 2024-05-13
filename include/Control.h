@@ -1,9 +1,10 @@
 #ifndef CONTROL_H
 #define CONTROL_H
+#include "Servo.h"
 #include <TCPConfig.h>
 #include <mymath.h>
 
-#define PI 3.14159f
+// #define PI 3.14159f
 #define LEN_HtoK 84.0f  // L1髋长度
 #define LEN_KtoA 73.5f  // L2大腿长度
 #define LEN_AtoF 140.5f // L3小腿长度
@@ -18,10 +19,14 @@ public:
     Theta ikCaculateTest(Position3 &pos);
 };
 
+class Robot
+{
+public:
+   // LegConfig Leg1; // 1号腿对象
+};
+
 void debugIK(void *PvParameters);
 float R2D(float rad);
 float D2R(float deg);
-
-
 
 #endif
