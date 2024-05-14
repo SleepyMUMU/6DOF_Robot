@@ -49,7 +49,9 @@ float movebackward_position[3][3] = {
 };
 u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
-
+LegConfig::LegConfig()
+{
+}
 LegConfig::LegConfig(FSUS_Protocol INputPol, u8_t LegSer)
 {
     this->legSer = LegSer;                                           // 传入机械臂序号

@@ -13,6 +13,19 @@ float defaultPosition[10][3] = {
     {10.26, 2.389, -22.53}  // 9
 };
 
+Robot::Robot(FSUS_Protocol INputPol1, FSUS_Protocol INputPol2)
+{
+    Leg[0] = LegConfig(INputPol2, 1);
+    Leg[1] = LegConfig(INputPol2, 2);
+    Leg[2] = LegConfig(INputPol2, 3);
+    Leg[3] = LegConfig(INputPol1, 4);
+    Leg[4] = LegConfig(INputPol1, 5);
+    Leg[5] = LegConfig(INputPol1, 6);
+
+    defaultPos1 = defaultpos1;
+    defaultPos2 = defaultpos2;
+}
+
 Robot::Robot(LegConfig leg1, LegConfig leg2, LegConfig leg3, LegConfig leg4, LegConfig leg5, LegConfig leg6)
 {
     Leg[0] = leg1;
@@ -21,7 +34,6 @@ Robot::Robot(LegConfig leg1, LegConfig leg2, LegConfig leg3, LegConfig leg4, Leg
     Leg[3] = leg4;
     Leg[4] = leg5;
     Leg[5] = leg6;
-
     defaultPos1 = defaultpos1;
     defaultPos2 = defaultpos2;
 }
