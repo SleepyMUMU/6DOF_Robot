@@ -1,4 +1,5 @@
 #include "CoreSet.h"
+#include "Robot.h"
 
 #define CONFIG_FREERTOS_USE_TRACE_FACILITY
 #define configUSE_TRACE_FACILITY 1

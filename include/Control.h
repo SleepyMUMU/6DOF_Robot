@@ -19,12 +19,6 @@ public:
     Theta ikCaculateTest(Position3 &pos);
 };
 
-class Robot
-{
-public:
-   // LegConfig Leg1; // 1号腿对象
-};
-
 void debugIK(void *PvParameters);
 float R2D(float rad);
 float D2R(float deg);

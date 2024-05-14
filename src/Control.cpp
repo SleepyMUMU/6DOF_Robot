@@ -1,4 +1,6 @@
 #include "Control.h"
+#include "Servo.h"
+
 
 // static Position3 fkine(Theta thetas);
 // static Theta ikine(Position3 &pos);
@@ -90,4 +92,3 @@ void debugIK(void *PvParameters)
         vTaskDelay(1);
     }
 }
-

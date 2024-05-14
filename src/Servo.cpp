@@ -271,9 +271,9 @@ void LegConfig::LegMoving()
     for (i = 0; i < 3; i++) // Fix the for loop condition
     {
         ikine(debugAngle[i][0], debugAngle[i][1], debugAngle[i][2]);
-        hipServo.setAngle(this->hipAngle + defaultHipAngle, defaultTime);
-        kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, defaultTime);
-        ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, defaultTime);
+        hipServo.setAngle(this->hipAngle + defaultHipAngle, servoDefaultTime);
+        kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, servoDefaultTime);
+        ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, servoDefaultTime);
         delay(2000);
     }
 }
@@ -281,9 +281,9 @@ void LegConfig::LegMoving(float x, float y, float z)
 {
 
     ikine(x, y, z);
-    hipServo.setAngle(this->hipAngle + defaultHipAngle, defaultTime);
-    kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, defaultTime);
-    ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, defaultTime);
+    hipServo.setAngle(this->hipAngle + defaultHipAngle, servoDefaultTime);
+    kneeServo.setAngle(this->kneeAngle + defaultKneeAngle, servoDefaultTime);
+    ankleServo.setAngle(-this->ankleAngle + defaultAnkleAngle, servoDefaultTime);
 }
 void LegSetAngle_task(void *pvParameters)
 {
@@ -762,7 +762,7 @@ void RobotPos_Task(void *pvParameters)
         xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
         TargetLeg->LegMoving(defaultPosition[PosSerial][0], defaultPosition[PosSerial][1], defaultPosition[PosSerial][2]);
     }
-    delay(defaultTime);
+    delay(servoDefaultTime);
     vTaskDelete(NULL);
 }
 void crosswise_Task(void *pvParameters)
@@ -779,7 +779,7 @@ void crosswise_Task(void *pvParameters)
         xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
         TargetLeg->LegMoving(defaultPosition[PosSerial][0], defaultPosition[PosSerial][1], defaultPosition[PosSerial][2]);
     }
-    delay(defaultTime);
+    delay(servoDefaultTime);
     vTaskDelete(NULL);
 }
 // void Legdebug_Task(void *pvParameters)
