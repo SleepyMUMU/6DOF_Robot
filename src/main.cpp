@@ -22,12 +22,12 @@ TCPConfig JIAHONG;
 FSUS_Protocol protocol1(&ServoSerial1, ServoSerial1Baud);
 FSUS_Protocol protocol2(&ServoSerial2, ServoSerial2Baud);
 
-LegConfig Leg1; // 1号腿对象
-LegConfig Leg2; // 2号腿对象
-LegConfig Leg3; // 3号腿对象
-LegConfig Leg4; // 4号腿对象
-LegConfig Leg5; // 5号腿对象
-LegConfig Leg6; // 6号腿对象
+LegConfig Leg1(protocol2, 1); // 1号腿对象
+LegConfig Leg2(protocol2, 2); // 2号腿对象
+LegConfig Leg3(protocol2, 3); // 3号腿对象
+LegConfig Leg4(protocol1, 4); // 4号腿对象
+LegConfig Leg5(protocol1, 5); // 5号腿对象
+LegConfig Leg6(protocol1, 6); // 6号腿对象
 
 Robot robot(Leg1, Leg2, Leg3, Leg4, Leg5, Leg6);
 
@@ -40,7 +40,7 @@ uint8_t DataLength;        // 数据长度
 
 void setup()
 {
-
+  delay(500);
   coreSetEnable();
   UARTInit();          // 初始化串口
   if (WLAN.WiFiInit()) // 初始化WiFi
@@ -60,6 +60,7 @@ void setup()
   Leg5.LegInit(protocol1, 5);
   Leg6.LegInit(protocol1, 6);
 
+  robot.InitPos(0, 1, 1, 1000); // 初始化机器人位置
   // 生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));

@@ -20,7 +20,7 @@ public:
     void SetPos(float Leg1Position[3], float Leg2Position[3], float Leg3Position[3], float Leg4Position[3], float Leg5Position[3], float Leg6Position[3]);
     void SetPos(float Leg1Position[3], float Leg2Position[3], float Leg3Position[3], float Leg4Position[3], float Leg5Position[3], float Leg6Position[3], FSUS_INTERVAL_T time);
     void InitPos(u8_t pos1, u8_t pos2);
-    void InitPos(u8_t pos1, u8_t pos2, u8_t loopnum, u8_t time);
+    void InitPos(u8_t pos1, u8_t pos2, u8_t loopnum, FSUS_INTERVAL_T time);
     u8_t loopnum = 1;
     u8_t defaultPos1;
     u8_t defaultPos2;
