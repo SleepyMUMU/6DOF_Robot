@@ -450,6 +450,7 @@ void straight()
     {
         if (t < T / 2)
         {
+            //机械腿组1摆动相
             x1 = moveforward_position[flag1][0];
             y1 = moveforward_position[flag1][1];
             z1 = moveforward_position[flag1][2];
@@ -462,15 +463,16 @@ void straight()
         }
         else
         {
+            //机械腿组2摆动相
             x2 = movebackward_position[flag2][0];
             y2 = movebackward_position[flag2][1];
             z2 = movebackward_position[flag2][2];
             if (flag2 == 2)
             {
-                x1 = movebackward_position[3][0];
-                y1 = movebackward_position[3][1];
-                z1 = movebackward_position[3][2];
-            }
+            x1 = movebackward_position[3][0];
+            y1 = movebackward_position[3][1];
+            z1 = movebackward_position[3][2];
+        }
         }
         for (size_t i = 0; i < AddedNumofLeg; i++)
         {
@@ -487,6 +489,8 @@ void straight()
         }
         flag1++;
         flag2++;
+        delay(step);
+        t += step;
     }
 }
 void crosswise_walk()
@@ -583,6 +587,15 @@ void crosswise_walk()
     }
 }
 
+void straight_walk_task(void *pvParameters)
+{
+    while (1)
+    {
+        straight();
+        vTaskDelete(NULL);
+        vTaskDelay(1);
+    }
+}
 void crosswise_walk_task(void *pvParameters)
 {
     while (1)
