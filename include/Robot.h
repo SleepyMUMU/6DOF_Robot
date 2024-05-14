@@ -5,7 +5,6 @@
 #include <Servo.h>
 #include <FashionStar_UartServo.h>
 #include <FashionStar_UartServoProtocol.h>
-
 #define RobotInitPosTime 1000
 #define defaultpos1 0
 #define defaultpos2 1

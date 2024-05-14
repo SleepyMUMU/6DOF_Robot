@@ -26,6 +26,7 @@ Robot::Robot(LegConfig leg1, LegConfig leg2, LegConfig leg3, LegConfig leg4, Leg
     defaultPos2 = defaultpos2;
 }
 
+
 void Robot::SetPos(float Leg1Position[3], float Leg2Position[3], float Leg3Position[3], float Leg4Position[3], float Leg5Position[3], float Leg6Position[3])
 {
     Leg[0].LegMoving(Leg1Position[0], Leg1Position[1], Leg1Position[2], servoDefaultTime);
