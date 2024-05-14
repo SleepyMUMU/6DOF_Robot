@@ -452,6 +452,7 @@ void straight()
         }
         else
         {
+            //机械腿组2摆动相
             x2 = movebackward_position[flag2][0];
             y2 = movebackward_position[flag2][1];
             z2 = movebackward_position[flag2][2];
@@ -573,6 +574,15 @@ void crosswise_walk()
     }
 }
 
+void straight_walk_task(void *pvParameters)
+{
+    while (1)
+    {
+        straight();
+        vTaskDelete(NULL);
+        vTaskDelay(1);
+    }
+}
 void crosswise_walk_task(void *pvParameters)
 {
     while (1)
