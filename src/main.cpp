@@ -53,14 +53,14 @@ void setup()
   protocol1.init(&ServoSerial1, ServoSerial1Baud, ServoSerial1Rx, ServoSerial1Tx);
   protocol2.init(&ServoSerial2, ServoSerial2Baud, ServoSerial2Rx, ServoSerial2Tx);
 
-  Leg1.LegInit(protocol2, 1);
-  Leg2.LegInit(protocol2, 2);
-  Leg3.LegInit(protocol2, 3);
-  Leg4.LegInit(protocol1, 4);
-  Leg5.LegInit(protocol1, 5);
-  Leg6.LegInit(protocol1, 6);
+  Leg1.LegInit();
+  Leg2.LegInit();
+  Leg3.LegInit();
+  Leg4.LegInit();
+  Leg5.LegInit();
+  Leg6.LegInit();
 
-  robot.InitPos(0, 1, 1, 1000); // 初始化机器人位置
+  //robot.InitPos(0, 1, 1, 1000); // 初始化机器人位置
   // 生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));

@@ -105,7 +105,11 @@ void LegConfig::LegPowerDown()
     this->kneeServo.setTorque(false);  // knee膝关节舵机关闭阻尼
     this->ankleServo.setTorque(false); // ankle踝关节舵机关闭阻尼
 }
-void LegConfig::LegInit();
+void LegConfig::LegInit()
+{
+    LegSetAngle(defaultHipAngle, defaultKneeAngle, defaultAnkleAngle, defaultRunTime);
+    delay(defaultRunTime);
+}
 void LegConfig::LegInit(FSUS_Protocol INputPol, u8_t LegSer)
 {
     this->legSer = LegSer;                                           // 传入机械臂序号
