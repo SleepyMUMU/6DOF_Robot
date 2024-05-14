@@ -467,10 +467,10 @@ void straight()
             z2 = movebackward_position[flag2][2];
             if (flag2 == 2)
             {
-                x1 = movebackward_position[3][0];
-                y1 = movebackward_position[3][1];
-                z1 = movebackward_position[3][2];
-            }
+            x1 = movebackward_position[3][0];
+            y1 = movebackward_position[3][1];
+            z1 = movebackward_position[3][2];
+        }
         }
         for (size_t i = 0; i < AddedNumofLeg; i++)
         {
@@ -487,6 +487,8 @@ void straight()
         }
         flag1++;
         flag2++;
+        delay(step);
+        t += step;
     }
 }
 void crosswise_walk()
