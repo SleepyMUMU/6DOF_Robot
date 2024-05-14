@@ -1,4 +1,5 @@
 #include "Servo.h"
+#include "Robot.h"
 
 FSUS_SERVO_ANGLE_T defaultAngleArray[7][3] = {
     {0, 0, 0},
@@ -25,18 +26,7 @@ float debugAngle[5][3] = {
     {157.5, 0, -140.8},
 };
 #define PosDownSer 0
-float defaultPosition[10][3] = {
-    {157.5, 0, -140.8},     // 0
-    {111.4, 111.4, -140.8}, // 1
-    {10.26, 2.389, -22.53}, // 2
-    {10.26, 2.389, -22.53}, // 3
-    {10.26, 2.389, -22.53}, // 4
-    {10.26, 2.389, -22.53}, // 5
-    {10.26, 2.389, -22.53}, // 6
-    {10.26, 2.389, -22.53}, // 7
-    {10.26, 2.389, -22.53}, // 8
-    {10.26, 2.389, -22.53}  // 9
-};
+
 float moveleft_position[3][3] = {
     {225.4, 0, -102.9}, // 0
     {227.9, 0, -121.9}, // 1
@@ -60,8 +50,23 @@ float movebackward_position[3][3] = {
 u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
 
-LegConfig::LegConfig()
+LegConfig::LegConfig(FSUS_Protocol INputPol, u8_t LegSer)
 {
+    this->legSer = LegSer;                                           // 传入机械臂序号
+    this->hipServoID = defaultLegServoSerial[LegSer][0];             // 传入Hip髋关节舵机ID1
+    this->kneeServoID = defaultLegServoSerial[LegSer][1];            // 传入Knee膝关节舵机ID2
+    this->ankleServoID = defaultLegServoSerial[LegSer][2];           // 传入Ankle踝关节舵机ID3
+    this->defaultHipAngle = defaultAngleArray[LegSer][0];            // 传入默认Hip髋关节角度
+    this->defaultKneeAngle = defaultAngleArray[LegSer][1];           // 传入默认Knee膝关节角度
+    this->defaultAnkleAngle = defaultAngleArray[LegSer][2];          // 传入默认Ankle踝关节角度
+    this->protocol = INputPol;                                       // 初始化舵机串口通信协议
+    this->hipServo.init(this->hipServoID, &this->protocol);          // 初始化hip髋关节舵机
+    this->kneeServo.init(this->kneeServoID, &this->protocol);        // 初始化knee膝关节舵机
+    this->ankleServo.init(this->ankleServoID, &this->protocol);      // 初始化ankle踝关节舵机
+    LegQueue[AddedNumofLeg] = xQueueCreate(1, sizeof(LegConfig *));  // 创建一个消息队列
+    LegConfig *LegPointer = this;                                    // 将LegConfig对象的指针传递给消息队列
+    xQueueSend(LegQueue[AddedNumofLeg], &LegPointer, portMAX_DELAY); // 发送消息队列
+    AddedNumofLeg++;
 }
 LegConfig::~LegConfig()
 {
@@ -100,10 +105,14 @@ void LegConfig::LegPowerDown()
     this->kneeServo.setTorque(false);  // knee膝关节舵机关闭阻尼
     this->ankleServo.setTorque(false); // ankle踝关节舵机关闭阻尼
 }
+void LegConfig::LegInit()
+{
+    LegSetAngle(defaultHipAngle, defaultKneeAngle, defaultAnkleAngle, defaultRunTime);
+    delay(defaultRunTime);
+}
 void LegConfig::LegInit(FSUS_Protocol INputPol, u8_t LegSer)
 {
-    this->legSer = LegSer; // 传入机械臂序号
-
+    this->legSer = LegSer;                                           // 传入机械臂序号
     this->hipServoID = defaultLegServoSerial[LegSer][0];             // 传入Hip髋关节舵机ID1
     this->kneeServoID = defaultLegServoSerial[LegSer][1];            // 传入Knee膝关节舵机ID2
     this->ankleServoID = defaultLegServoSerial[LegSer][2];           // 传入Ankle踝关节舵机ID3
@@ -759,23 +768,6 @@ void LegMoving_Task(void *pvParameters)
     }
 }
 
-void RobotPos_Task(void *pvParameters)
-{
-    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
-    Target->TCP.println("[RobotPos]set all leg to the position of the robot.");
-    Target->TCP.println("[RobotPos]Please enter PosSerial Number of the Leg you want to Moving,default is 0.");
-    while (Target->ReceiveData == "")
-        ;
-    u8_t PosSerial = Target->ReceiveData.toInt();
-    for (size_t i = 0; i < AddedNumofLeg; i++)
-    {
-        LegConfig *TargetLeg;
-        xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-        TargetLeg->LegMoving(defaultPosition[PosSerial][0], defaultPosition[PosSerial][1], defaultPosition[PosSerial][2]);
-    }
-    delay(servoDefaultTime);
-    vTaskDelete(NULL);
-}
 void crosswise_Task(void *pvParameters)
 {
     TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象

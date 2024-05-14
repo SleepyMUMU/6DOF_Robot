@@ -47,27 +47,27 @@ void Robot::SetPos(float Leg1Position[3], float Leg2Position[3], float Leg3Posit
 }
 void Robot::InitPos(u8_t pos1, u8_t pos2)
 {
-    u8_t pos1 = 0;
-    u8_t pos1 = 1;
+    this->defaultPos1 = pos1;
+    this->defaultPos2 = pos2;
     u8_t loopnum = 1;
     FSUS_INTERVAL_T time = RobotInitPosTime;
     for (u8_t i = 0; i < loopnum; i++)
     {
-        robot.SetPos(defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], time);
+        robot.SetPos(defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], time);
         delay(time);
-        robot.SetPos(defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], time);
+        robot.SetPos(defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], time);
         delay(time);
     }
 }
-void Robot::InitPos(u8_t pos1, u8_t pos2, u8_t loopnum, u8_t time)
+void Robot::InitPos(u8_t pos1, u8_t pos2, u8_t loopnum, FSUS_INTERVAL_T time)
 {
-    u8_t pos1 = defaultPos1;
-    u8_t pos2 = defaultpos1;
+    this->defaultPos1 = pos1;
+    this->defaultPos2 = pos2;
     for (u8_t i = 0; i < loopnum; i++)
     {
-        robot.SetPos(defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], defaultPosition[pos1], time);
+        robot.SetPos(defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], defaultPosition[defaultPos1], time);
         delay(time);
-        robot.SetPos(defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], defaultPosition[pos2], time);
+        robot.SetPos(defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], defaultPosition[defaultpos2], time);
         delay(time);
     }
 }
