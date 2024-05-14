@@ -90,12 +90,21 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->Terminal_TaskHandle = taskHandle;
                     Target->truncateStream = true;
                 }
+                else if(Target->ReceiveData == "cross")
+                {
+                    Target->TCP.println("[I][RunTime]Cross Test.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(crosswise_walk_task, "CrossTest", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                    Target->truncateStream = true;
+                }
                 else if (Target->ReceiveData == "postest")
                 {
                     Target->TCP.println("[I][RunTime]Pos Test.");
                     xTaskCreate(RobotPos_Task, "PosTest", 4096, Target, 1, NULL);
                 }
-
+               
                 else if (Target->ReceiveData == "sendmsg")
                 {
                     Target->TCP.println("[I][RunTime]Send Message To Other Client.");

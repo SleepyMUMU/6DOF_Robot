@@ -26,10 +26,10 @@ float debugAngle[5][3] = {
 };
 #define PosDownSer 0
 float defaultPosition[10][3] = {
-    {10.26, 2.389, -22.53}, // 0
-    {220.1, 84.48, -64.17}, // 1
-    {156.6, 49.98, -140.1}, // 2
-    {140.7, 46, -196},      // 3
+    {157.5, 0, -140.8},     // 0
+    {111.4, 111.4, -140.8}, // 1
+    {10.26, 2.389, -22.53}, // 2
+    {10.26, 2.389, -22.53}, // 3
     {10.26, 2.389, -22.53}, // 4
     {10.26, 2.389, -22.53}, // 5
     {10.26, 2.389, -22.53}, // 6
@@ -37,7 +37,26 @@ float defaultPosition[10][3] = {
     {10.26, 2.389, -22.53}, // 8
     {10.26, 2.389, -22.53}  // 9
 };
-
+float moveleft_position[3][3] = {
+    {225.4, 0, -102.9}, // 0
+    {227.9, 0, -121.9}, // 1
+    {157.5, 0, -140.8}  // 2
+};
+float moveright_position[3][3] = {
+    {84.6, 0, -141.0}, // 0
+    {87.1, 0, -121.9}, // 1
+    {157.5, 0, -140.8} // 2
+};
+float moveforward_position[3][3] = {
+    {217.7, 58.34, -102.9}, // 0
+    {136.4, 78.75, -140.8}, // 1
+    {157.5, 0, -140.8}      // 2
+};
+float movebackward_position[3][3] = {
+    {217.7, -58.34, -102.9}, // 0
+    {136.4, -78.75, -140.8}, // 1
+    {157.5, 0, -140.8}       // 2
+};
 u8_t AddedNumofLeg = 0;
 QueueHandle_t LegQueue[numofLeg]; // 腿部队列
 
@@ -408,6 +427,160 @@ void LegPing_Task(void *pvParameters)
     }
 }
 
+void straight()
+{
+    int16_t T = 1000;                 // 周期
+    int16_t step = 250;               // 每点间隔
+    uint8_t flag1 = 0, flag2 = 0;     // 两组腿位置标志位
+    uint8_t B_flag1 = 0, B_flag2 = 0; // 摆动标志位 1为摆动 0为支撑
+    float x1, y1, z1, x2, y2, z2;
+    uint8_t t = 0;
+    while (t < T)
+    {
+        if (t < T / 2)
+        {
+            x1 = moveforward_position[flag1][0];
+            y1 = moveforward_position[flag1][1];
+            z1 = moveforward_position[flag1][2];
+            if (flag1 == 2)
+            {
+                x2 = moveforward_position[3][0];
+                y2 = moveforward_position[3][1];
+                z2 = moveforward_position[3][2];
+            }
+        }
+        else
+        {
+            x2 = movebackward_position[flag2][0];
+            y2 = movebackward_position[flag2][1];
+            z2 = movebackward_position[flag2][2];
+            if (flag2 == 2)
+            {
+                x1 = movebackward_position[3][0];
+                y1 = movebackward_position[3][1];
+                z1 = movebackward_position[3][2];
+            }
+        }
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            if (i == 0 || i == 2 || i == 4)
+            {
+                TargetLeg->LegMoving(x1, y1, z1);
+            }
+            else if (i == 1 || i == 3 || i == 5)
+            {
+                TargetLeg->LegMoving(x2, y2, z2);
+            }
+        }
+        flag1++;
+        flag2++;
+    }
+}
+void crosswise_walk()
+{
+    int16_t T = 1000;                                               // 周期
+    int16_t step = 250;                                             // 每点间隔
+    uint8_t G1B_flag = 0, G2B_flag = 0, G3B_flag = 0, B = 0, z = 0; // 两组腿的标志位
+    uint8_t t = 0;
+    float x1, y1, z1, x2, y2, z2, x3, y3, z3;
+    while (t < T)
+    {
+        if (t < T / 2)
+        {
+            x1 = moveleft_position[G1B_flag][0];
+            y1 = moveleft_position[G1B_flag][1];
+            z1 = moveleft_position[G1B_flag][2];
+
+            x3 = moveright_position[G1B_flag][0];
+            y3 = moveright_position[G1B_flag][1];
+            z3 = moveright_position[G1B_flag][2];
+
+            if (G1B_flag == 2)
+            {
+                x2 = moveright_position[3][0];
+                y2 = moveright_position[3][1];
+                z2 = moveright_position[3][2];
+                B = 0;
+                z = 1;
+            }
+            B = 1;
+            z = 0;
+        }
+        else
+        {
+            x2 = moveright_position[G2B_flag][0];
+            y2 = moveright_position[G2B_flag][1];
+            z2 = moveright_position[G2B_flag][2];
+
+            x3 = moveleft_position[G2B_flag][0];
+            y3 = moveleft_position[G2B_flag][1];
+            z3 = moveleft_position[G2B_flag][2];
+
+            if (G2B_flag == 2)
+            {
+                x1 = moveleft_position[3][0];
+                y1 = moveleft_position[3][1];
+                z1 = moveleft_position[3][2];
+            }
+            B = 0;
+            z = 1;
+        }
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            if (i == 0 || i == 2)
+            {
+                TargetLeg->LegMoving(x1, y1, z1);
+            }
+            else if (i == 4)
+            {
+                if (z == 1)
+                {
+                    TargetLeg->LegMoving(x3, y3, z3);
+                }
+                else
+                {
+                    TargetLeg->LegMoving(x1, y1, z1);
+                }
+                G1B_flag %= 2;
+            }
+            else if (i == 3 || i == 5)
+            {
+                TargetLeg->LegMoving(x2, y2, z2);
+            }
+            else if (i == 1)
+            {
+                if (B == 1)
+                {
+                    TargetLeg->LegMoving(x3, y3, z3);
+                }
+                else
+                {
+                    TargetLeg->LegMoving(x2, y2, z2);
+                }
+                G2B_flag %= 2;
+            }
+        }
+        G1B_flag += 1;
+        G2B_flag += 1;
+
+        delay(step);
+        t += step;
+    }
+}
+
+void crosswise_walk_task(void *pvParameters)
+{
+    while (1)
+    {
+        crosswise_walk();
+        vTaskDelete(NULL);
+        vTaskDelay(1);
+    }
+}
 void LegAngleQuery_Task(void *pvParameters)
 {
     TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
@@ -580,6 +753,23 @@ void RobotPos_Task(void *pvParameters)
     TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
     Target->TCP.println("[RobotPos]set all leg to the position of the robot.");
     Target->TCP.println("[RobotPos]Please enter PosSerial Number of the Leg you want to Moving,default is 0.");
+    while (Target->ReceiveData == "")
+        ;
+    u8_t PosSerial = Target->ReceiveData.toInt();
+    for (size_t i = 0; i < AddedNumofLeg; i++)
+    {
+        LegConfig *TargetLeg;
+        xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+        TargetLeg->LegMoving(defaultPosition[PosSerial][0], defaultPosition[PosSerial][1], defaultPosition[PosSerial][2]);
+    }
+    delay(defaultTime);
+    vTaskDelete(NULL);
+}
+void crosswise_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+    Target->TCP.println("[crosswise]set all leg to the position of the robot.");
+    Target->TCP.println("[crosswise]Please enter PosSerial Number of the Leg you want to Moving,default is 0.");
     while (Target->ReceiveData == "")
         ;
     u8_t PosSerial = Target->ReceiveData.toInt();

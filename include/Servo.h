@@ -150,4 +150,5 @@ void LegSetAngle_task(void *pvParameters);
 void LegAngleQuery_Task(void *pvParameters);
 void LegMoving_Task(void *pvParameters);
 void RobotPos_Task(void *pvParameters);
+void crosswise_walk_task(void *pvParameters);
 #endif
