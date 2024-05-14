@@ -439,6 +439,7 @@ void straight()
     {
         if (t < T / 2)
         {
+            //机械腿组1摆动相
             x1 = moveforward_position[flag1][0];
             y1 = moveforward_position[flag1][1];
             z1 = moveforward_position[flag1][2];
