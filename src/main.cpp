@@ -30,7 +30,7 @@ LegConfig Leg5(protocol1, 5); // 5号腿对象
 LegConfig Leg6(protocol1, 6); // 6号腿对象
 
 Robot robot(Leg1, Leg2, Leg3, Leg4, Leg5, Leg6);
-
+// Robot robot(protocol1, protocol2);
 uint8_t ReciveBuffer[200]; // 接收缓冲区
 float ReciveData;          // 接收数据
 uint8_t Num_Start;         // 数据起始
@@ -53,15 +53,15 @@ void setup()
   protocol1.init(&ServoSerial1, ServoSerial1Baud, ServoSerial1Rx, ServoSerial1Tx);
   protocol2.init(&ServoSerial2, ServoSerial2Baud, ServoSerial2Rx, ServoSerial2Tx);
 
-  Leg1.LegInit();
-  Leg2.LegInit();
-  Leg3.LegInit();
-  Leg4.LegInit();
-  Leg5.LegInit();
-  Leg6.LegInit();
+  // Leg1.LegInit();
+  // Leg2.LegInit();
+  // Leg3.LegInit();
+  // Leg4.LegInit();
+  // Leg5.LegInit();
+  // Leg6.LegInit();
 
-  //robot.InitPos(0, 1, 1, 1000); // 初始化机器人位置
-  // 生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
+  robot.InitPos(1, 2, 1, 2000); // 初始化机器人位置
+  //  生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
 

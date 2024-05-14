@@ -17,6 +17,8 @@ public:
     Robot(LegConfig leg1, LegConfig leg2, LegConfig leg3, LegConfig leg4, LegConfig leg5, LegConfig leg6);
     LegConfig Leg[6];
 
+    Robot(FSUS_Protocol INputPol1, FSUS_Protocol INputPol2);
+
     void SetPos(float Leg1Position[3], float Leg2Position[3], float Leg3Position[3], float Leg4Position[3], float Leg5Position[3], float Leg6Position[3]);
     void SetPos(float Leg1Position[3], float Leg2Position[3], float Leg3Position[3], float Leg4Position[3], float Leg5Position[3], float Leg6Position[3], FSUS_INTERVAL_T time);
     void InitPos(u8_t pos1, u8_t pos2);

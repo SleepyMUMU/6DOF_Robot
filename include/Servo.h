@@ -10,7 +10,6 @@
 #include <mymath.h>
 #include "TCPConfig.h"
 
-
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -106,10 +105,12 @@ public:
     FSUS_POWER_T Power;
     FSUS_SERVO_ANGLE_T hipAngle, kneeAngle, ankleAngle;
     FSUS_SERVO_ANGLE_T defaultHipAngle, defaultKneeAngle, defaultAnkleAngle;
-    LegConfig(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID); // 构造函数
+    LegConfig(FSUS_Protocol INputPol, uint8_t hipServoID, uint8_t kneeServoID, uint8_t ankleServoID);
+    LegConfig();
+    // 构造函数
     LegConfig(FSUS_Protocol INputPol, u8_t LegSer);
     ~LegConfig(); // 暂不考虑释放机械臂对象的情况，析构函数留空
-    u8_t legSer;
+    u8_t legSer = 0;
     uint8_t hipServoID;   // hip髋关节舵机ID1
     uint8_t kneeServoID;  // knee膝关节舵机ID2
     uint8_t ankleServoID; // ankle舵机ID3
@@ -142,7 +143,6 @@ public:
     void LegMoving(float x, float y, float z, FSUS_INTERVAL_T intertval);
     void LegMoving(float x, float y, float z);
 };
-
 extern u8_t AddedNumofLeg;
 extern QueueHandle_t LegQueue[numofLeg];
 
