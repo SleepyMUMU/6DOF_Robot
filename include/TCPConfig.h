@@ -16,9 +16,9 @@
     {                 \
         10, 3, 45, 69 \
     } // MUMU服务器IP
-#define JIAHONGServerIP \
-    {                   \
-        192,168,31,34   \
+#define JIAHONGServerIP  \
+    {                    \
+        192, 168, 31, 34 \
     } // JIAHONG服务器IP
 
 #define MUMUServerPort 2345         // MUMU服务器端口
@@ -30,7 +30,6 @@
 class TCPConfig
 {
 public:
-
     WiFiClient TCP;
     IPAddress serverIP;
     u16_t serverPort;
