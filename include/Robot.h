@@ -8,7 +8,7 @@
 #define RobotInitPosTime 1000
 #define defaultpos1 0
 #define defaultpos2 1
-extern float defaultPosition[10][3];
+extern float defaultPosition[11][3];
 
 class Robot
 {
@@ -28,5 +28,7 @@ public:
 };
 
 void RobotPos_Task(void *pvParameters);
-
+void RobotPosUp_Task(void *pvParameters);
+void RobotPosDown_Task(void *pvParameters);
+void RobotPoscar_Task(void *pvParameters);
 #endif // _ROBOT_H_

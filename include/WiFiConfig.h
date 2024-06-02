@@ -14,6 +14,8 @@
 /*********WiFi Config*********/
 #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
 #define defaultPassward "woaiwuxie1" // 默认WiFi密码
+// #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
+// #define defaultPassward "woaiwuxie1" // 默认WiFi密码
 // #define defaultSSID "MUMUSPC"   // 默认WiFi名称
 // #define defaultPassward "yssahttn" // 默认WiFi密码
 /*********Static IP Config*********/

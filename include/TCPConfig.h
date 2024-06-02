@@ -18,7 +18,7 @@
     } // MUMU服务器IP
 #define JIAHONGServerIP \
     {                   \
-        192,168,31,34   \
+        192,168,31,35   \
     } // JIAHONG服务器IP
 
 #define MUMUServerPort 2345         // MUMU服务器端口

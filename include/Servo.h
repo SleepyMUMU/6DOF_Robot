@@ -59,32 +59,32 @@
 /*
  *舵机原始角度
  */
-#define defaultLeg1HipAngle 6.6    // 舵机原始角度
-#define defaultLeg1KneeAngle -10.5 // 舵机原始角度
-#define defaultLeg1AnkleAngle -5   // 舵机原始角度
+#define defaultLeg1HipAngle 5.9    // 舵机原始角度
+#define defaultLeg1KneeAngle -1.6// 舵机原始角度
+#define defaultLeg1AnkleAngle 11.5   // 舵机原始角度
 
-#define defaultLeg2HipAngle -0.2   // 舵机原始角度
-#define defaultLeg2KneeAngle -7.2  // 舵机原始角度
-#define defaultLeg2AnkleAngle -3.3 // 舵机原始角度
+#define defaultLeg2HipAngle -4.7   // 舵机原始角度
+#define defaultLeg2KneeAngle -3.6  // 舵机原始角度
+#define defaultLeg2AnkleAngle -12.2 // 舵机原始角度
 
-#define defaultLeg3HipAngle 5.6  // 舵机原始角度
-#define defaultLeg3KneeAngle 5   // 舵机原始角度
-#define defaultLeg3AnkleAngle -2 // 舵机原始角度
+#define defaultLeg3HipAngle 12.2  // 舵机原始角度
+#define defaultLeg3KneeAngle 36.9// 舵机原始角度
+#define defaultLeg3AnkleAngle 12.7 // 舵机原始角度
 
-#define defaultLeg4HipAngle -14.3 // 舵机原始角度
-#define defaultLeg4KneeAngle -1.4 // 舵机原始角度
-#define defaultLeg4AnkleAngle 1.4 // 舵机原始角度
+#define defaultLeg4HipAngle -13.5 // 舵机原始角度
+#define defaultLeg4KneeAngle 78.0 // 舵机原始角度
+#define defaultLeg4AnkleAngle 2.7 // 舵机原始角度
 
-#define defaultLeg5HipAngle 3.1   // 舵机原始角度
-#define defaultLeg5KneeAngle -1.8 // 舵机原始角度
-#define defaultLeg5AnkleAngle 2.2 // 舵机原始角度
+#define defaultLeg5HipAngle 4.1   // 舵机原始角度
+#define defaultLeg5KneeAngle 1.6 // 舵机原始角度
+#define defaultLeg5AnkleAngle 15.9 // 舵机原始角度
 
-#define defaultLeg6HipAngle 11.3  // 舵机原始角度
-#define defaultLeg6KneeAngle -6.2 // 舵机原始角度
-#define defaultLeg6AnkleAngle 7.2 // 舵机原始角度
+#define defaultLeg6HipAngle 11.8  // 舵机原始角度
+#define defaultLeg6KneeAngle 9.3 // 舵机原始角度
+#define defaultLeg6AnkleAngle -31.1 // 舵机原始角度
 
 #define defaultAngle 0
-#define servoDefaultTime 1000
+#define servoDefaultTime 500
 
 #define defaultPower 500
 
@@ -153,5 +153,10 @@ void LegSetAngle_task(void *pvParameters);
 void LegAngleQuery_Task(void *pvParameters);
 void LegMoving_Task(void *pvParameters);
 void RobotPos_Task(void *pvParameters);
-void crosswise_walk_task(void *pvParameters);
+void straight_walk_task(void *pvParameters);
+void back_walk_task(void *pvParameters);
+void left_walk_task(void *pvParameters);
+void right_walk_task(void *pvParameters);
+void left_cross_walk_task(void *pvParameters);
+void right_cross_walk_task(void *pvParameters);
 #endif

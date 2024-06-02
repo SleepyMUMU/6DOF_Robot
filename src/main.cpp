@@ -60,8 +60,9 @@ void setup()
   // Leg5.LegInit();
   // Leg6.LegInit();
 
-  robot.InitPos(1, 2, 1, 2000); // 初始化机器人位置
+  // robot.InitPos(3, 4, 1, 2000); // 初始化机器人位置
   //  生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
+  robot.SetPos(defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10 ], 2000);
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
 

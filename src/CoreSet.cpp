@@ -91,21 +91,74 @@ void tcpRunTimeEnvTask(void *pvParam)
                     Target->Terminal_TaskHandle = taskHandle;
                     Target->truncateStream = true;
                 }
-                else if(Target->ReceiveData == "cross")
+                else if (Target->ReceiveData == "straight")
                 {
-                    Target->TCP.println("[I][RunTime]Cross Test.");
+                    Target->TCP.println("[I][RunTime]Straight Test.");
                     TaskHandle_t taskHandle = NULL;
-                    xTaskCreate(crosswise_walk_task, "CrossTest", 4096, Target, 1, &taskHandle);
+                    xTaskCreate(straight_walk_task, "StraightTest", 4096, Target, 1, &taskHandle);
                     TaskHindBind(&taskHandle, Target);
                     Target->Terminal_TaskHandle = taskHandle;
-                    Target->truncateStream = true;
+                }
+                else if (Target->ReceiveData == "back")
+                {
+                    Target->TCP.println("[I][RunTime]Straight Test.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(back_walk_task, "StraightTest", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                }
+                else if (Target->ReceiveData == "left")
+                {
+                    Target->TCP.println("[I][RunTime]Straight Test.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(left_walk_task, "StraightTest", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                }
+                else if (Target->ReceiveData == "lcross")
+                {
+                    Target->TCP.println("[I][RunTime]Straight Test.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(left_cross_walk_task, "StraightTest", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                }
+                else if (Target->ReceiveData == "right")
+                {
+                    Target->TCP.println("[I][RunTime]Straight Test.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(right_walk_task, "StraightTest", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                }
+                else if (Target->ReceiveData == "rcross")
+                {
+                    Target->TCP.println("[I][RunTime]Straight Test.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(right_cross_walk_task, "StraightTest", 4096, Target, 1, &taskHandle);
+                    TaskHindBind(&taskHandle, Target);
+                    Target->Terminal_TaskHandle = taskHandle;
+                }
+                else if (Target->ReceiveData == "up")
+                {
+                    Target->TCP.println("[I][RunTime]UpPosTest Test.");
+                    xTaskCreate(RobotPosUp_Task, "UpPosTest", 4096, Target, 1, NULL);
+                }
+                else if (Target->ReceiveData == "down")
+                {
+                    Target->TCP.println("[I][RunTime]DownPos Test.");
+                    xTaskCreate(RobotPosDown_Task, "DownPosTest", 4096, Target, 1, NULL);
+                }
+                else if (Target->ReceiveData == "car")
+                {
+                    Target->TCP.println("[I][RunTime]CarPosTest Test.");
+                    xTaskCreate(RobotPoscar_Task, "CarPosTest", 4096, Target, 1, NULL);
                 }
                 else if (Target->ReceiveData == "postest")
                 {
                     Target->TCP.println("[I][RunTime]Pos Test.");
                     xTaskCreate(RobotPos_Task, "PosTest", 4096, Target, 1, NULL);
                 }
-               
                 else if (Target->ReceiveData == "sendmsg")
                 {
                     Target->TCP.println("[I][RunTime]Send Message To Other Client.");
@@ -227,6 +280,7 @@ void tcpRunTimeEnvTaskCrtl(void *pvParam)
             {
                 Target->TCP.printf("[I][RunTime]Task %s is Exit.\n", pcTaskGetTaskName(Target->Terminal_TaskHandle));
                 vTaskSuspend(Target->Terminal_TaskHandle);
+                xTaskCreate(RobotPos_Task, "RobotInit", 4096, Target, 1, NULL);
                 Target->Terminal_TaskHandle = NULL;
                 Target->truncateStream = false;
             }
