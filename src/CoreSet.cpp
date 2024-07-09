@@ -101,9 +101,9 @@ void tcpRunTimeEnvTask(void *pvParam)
                 }
                 else if (Target->ReceiveData == "back")
                 {
-                    Target->TCP.println("[I][RunTime]Straight Test.");
+                    Target->TCP.println("[I][RunTime]Back Test.");
                     TaskHandle_t taskHandle = NULL;
-                    xTaskCreate(back_walk_task, "StraightTest", 4096, Target, 1, &taskHandle);
+                    xTaskCreate(back_walk_task, "Back Test", 4096, Target, 1, &taskHandle);
                     TaskHindBind(&taskHandle, Target);
                     Target->Terminal_TaskHandle = taskHandle;
                 }

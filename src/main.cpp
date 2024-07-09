@@ -42,7 +42,10 @@ void setup()
 {
   delay(500);
   coreSetEnable();
-  UARTInit();          // 初始化串口
+  UARTInit(); // 初始化串口
+  WiFi.begin(defaultSSID, defaultPassward);
+
+
   if (WLAN.WiFiInit()) // 初始化WiFi
   {
     DebugSerial.println("WiFi Init Success");
@@ -62,7 +65,7 @@ void setup()
 
   // robot.InitPos(3, 4, 1, 2000); // 初始化机器人位置
   //  生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
-  robot.SetPos(defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10 ], 2000);
+  robot.SetPos(defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], 2000);
 
   MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
 

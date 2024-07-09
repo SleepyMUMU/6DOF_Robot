@@ -42,7 +42,7 @@
 #define defaultServoID3 3
 #define numofLeg 6
 #define defaultLegName "UnNameLeg"
-#define defaultRunTime 1000
+#define defaultRunTime 100
 // ..Wanning: These default<xxx> should NOT used in the original code
 /**********************Other**********************/
 /*
@@ -59,29 +59,29 @@
 /*
  *舵机原始角度
  */
-#define defaultLeg1HipAngle 5.9    // 舵机原始角度
-#define defaultLeg1KneeAngle -1.6// 舵机原始角度
-#define defaultLeg1AnkleAngle 11.5   // 舵机原始角度
+#define defaultLeg1HipAngle 6.4    // 舵机原始角度
+#define defaultLeg1KneeAngle 1.6// 舵机原始角度
+#define defaultLeg1AnkleAngle 28.2  // 舵机原始角度
 
-#define defaultLeg2HipAngle -4.7   // 舵机原始角度
-#define defaultLeg2KneeAngle -3.6  // 舵机原始角度
-#define defaultLeg2AnkleAngle -12.2 // 舵机原始角度
+#define defaultLeg2HipAngle -5.2   // 舵机原始角度
+#define defaultLeg2KneeAngle -6.6  // 舵机原始角度
+#define defaultLeg2AnkleAngle 28.5 // 舵机原始角度
 
-#define defaultLeg3HipAngle 12.2  // 舵机原始角度
-#define defaultLeg3KneeAngle 36.9// 舵机原始角度
-#define defaultLeg3AnkleAngle 12.7 // 舵机原始角度
+#define defaultLeg3HipAngle 14.4  // 舵机原始角度
+#define defaultLeg3KneeAngle 38.7// 舵机原始角度
+#define defaultLeg3AnkleAngle 46.5 // 舵机原始角度
 
-#define defaultLeg4HipAngle -13.5 // 舵机原始角度
-#define defaultLeg4KneeAngle 78.0 // 舵机原始角度
-#define defaultLeg4AnkleAngle 2.7 // 舵机原始角度
+#define defaultLeg4HipAngle -10.4 // 舵机原始角度
+#define defaultLeg4KneeAngle 82.0// 舵机原始角度
+#define defaultLeg4AnkleAngle -42.9 // 舵机原始角度
 
-#define defaultLeg5HipAngle 4.1   // 舵机原始角度
-#define defaultLeg5KneeAngle 1.6 // 舵机原始角度
-#define defaultLeg5AnkleAngle 15.9 // 舵机原始角度
+#define defaultLeg5HipAngle 4.9   // 舵机原始角度
+#define defaultLeg5KneeAngle -0.1 // 舵机原始角度
+#define defaultLeg5AnkleAngle 12.1 // 舵机原始角度
 
-#define defaultLeg6HipAngle 11.8  // 舵机原始角度
-#define defaultLeg6KneeAngle 9.3 // 舵机原始角度
-#define defaultLeg6AnkleAngle -31.1 // 舵机原始角度
+#define defaultLeg6HipAngle 3.9 // 舵机原始角度
+#define defaultLeg6KneeAngle 5.0 // 舵机原始角度
+#define defaultLeg6AnkleAngle -11.5 // 舵机原始角度
 
 #define defaultAngle 0
 #define servoDefaultTime 500

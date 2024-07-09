@@ -12,16 +12,21 @@
 // #include <TCP.h>
 
 /*********WiFi Config*********/
-#define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
-#define defaultPassward "woaiwuxie1" // 默认WiFi密码
+#define defaultSSID "DebugPC"   // 默认WiFi名称
+#define defaultPassward "asdasdasd" // 默认WiFi密码
+// #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
+// #define defaultPassward "woaiwuxie1" // 默认WiFi密码
+// #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
+// #define defaultPassward "woaiwuxie1" // 默认WiFi密码
 // #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
 // #define defaultPassward "woaiwuxie1" // 默认WiFi密码
 // #define defaultSSID "MUMUSPC"   // 默认WiFi名称
 // #define defaultPassward "yssahttn" // 默认WiFi密码
 /*********Static IP Config*********/
+
 #define defaultLocalIP   \
-    {                    \
-        192, 168, 31, 62 \
+    {                    \  
+        192, 168, 137, 9 \
     } // 默认本地IP
 #define defaultGateway  \
     {                   \

@@ -1,6 +1,6 @@
 #include "Servo.h"
 #include "Robot.h"
-
+#include "Track.h"
 FSUS_SERVO_ANGLE_T defaultAngleArray[7][3] = {
     {0, 0, 0},
     {defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle},
@@ -480,44 +480,496 @@ void LegPing_Task(void *pvParameters)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
+float *center;
+float *rotation_axis;
+float *theta_per;
+float Start[3] = {127.4, -92.58, -140.8};
+float Mid[3] = {127.4, 0, -60.8};
+float End[3] = {127.4, 92.58, -140.8};
+float matrix_current[3][3];
 
 void straight()
 {
-    int16_t T = 2000;                 // 周期
-    int16_t DSD = 500;                // 每点间隔
-    uint8_t flag1 = 0, flag2 = 0;     // 两组腿位置标志位
-    uint8_t B_flag1 = 0, B_flag2 = 0; // 摆动标志位 1为摆动 0为支撑
-    float x1 = moveforward_position[2][0], y1 = moveforward_position[2][1], z1 = moveforward_position[2][2], x2 = moveforward_position[2][0], y2 = moveforward_position[2][1], z2 = moveforward_position[2][2];
+
+    int16_t DSD = 200; // 每点间隔
+    float T = 2;       // 周期
+    float step = 200;  // 步长
+    float H = 100;     // 步高
+    float t = 0;
+    float Position_Swing[3];
+    float Position_Support[3];
+
+    while (t <= T)
+    {
+
+        if (t <= T / 2)
+        {
+            Position_Swing[0] = 127.4;
+            Position_Swing[1] = 6 * step * pow(t, 5) - 15 * step * pow(t, 4) + 10 * step * pow(t, 3) - step / 2;
+            Position_Swing[2] = -64 * H * pow(t, 6) + 192 * H * pow(t, 5) - 192 * H * pow(t, 4) + 64 * H * pow(t, 3) - 140.8;
+
+            Position_Support[0] = 127.4;
+            Position_Support[1] = -6 * step * pow(t + 1, 5) + 45 * step * pow(t + 1, 4) - 130 * step * pow(t + 1, 3) + 180 * step * pow(t + 1, 2) - 120 * step * (t + 1) + 63 * step / 2;
+            Position_Support[2] = -140.8;
+        }
+        else if (t <= T && t > T / 2)
+        {
+            Position_Support[0] = 127.4;
+            Position_Support[1] = 6 * step * pow(t - 1, 5) - 15 * step * pow(t - 1, 4) + 10 * step * pow(t - 1, 3) - step / 2;
+            Position_Support[2] = -64 * H * pow(t - 1, 6) + 192 * H * pow(t - 1, 5) - 192 * H * pow(t - 1, 4) + 64 * H * pow(t - 1, 3) - 140.8;
+
+            Position_Swing[0] = 127.4;
+            Position_Swing[1] = -6 * step * pow(t, 5) + 45 * step * pow(t, 4) - 130 * step * pow(t, 3) + 180 * step * pow(t, 2) - 120 * step * t + 63 * step / 2;
+            Position_Swing[2] = -140.8;
+        }
+        else
+        {
+        }; // do nothing
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            switch (i)
+            {
+            case 0:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                break;
+
+            case 1:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                // case 1:
+                //     TargetLeg->LegMoving(x2, y2, z2);
+                break;
+            case 2:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                break;
+            case 3:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                break;
+            // case 3:
+            //     TargetLeg->LegMoving(x2, y2, z2);
+            //     break;
+            case 4:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                break;
+            case 5:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                // case 5:
+                //     TargetLeg->LegMoving(x2, y2, z2);
+                break;
+            default:
+                break;
+            }
+        }
+        delay(DSD);
+        t += 0.2;
+    }
+}
+// int16_t T = 2000;                 // 周期
+// int16_t DSD = 500;                // 每点间隔
+// uint8_t flag1 = 0, flag2 = 0;     // 两组腿位置标志位
+// uint8_t B_flag1 = 0, B_flag2 = 0; // 摆动标志位 1为摆动 0为支撑
+// float x1 = movebackward_position[2][0], y1 = movebackward_position[2][1], z1 = movebackward_position[2][2], x2 = movebackward_position[2][0], y2 = movebackward_position[2][1], z2 = movebackward_position[2][2];
+// int16_t t = 0;
+// while (t <= T)
+// {
+//     if (t <= T / 2)
+//     {
+//         // 机械腿组1摆动相
+//         x1 = movebackward_position[flag1][0];
+//         y1 = movebackward_position[flag1][1];
+//         z1 = movebackward_position[flag1][2];
+//         if (flag1 == 2)
+//         {
+//             x2 = movebackward_position[2][0];
+//             y2 = movebackward_position[2][1];
+//             z2 = movebackward_position[2][2];
+//         }
+//         flag1++;
+//         flag1 %= 3;
+//     }
+//     if (t > T / 2 && t <= T)
+//     {
+//         // 机械腿组2摆动相
+//         x2 = movebackward_position[flag2][0];
+//         y2 = movebackward_position[flag2][1];
+//         z2 = movebackward_position[flag2][2];
+//         if (flag2 == 2)
+//         {
+//             x1 = movebackward_position[2][0];
+//             y1 = movebackward_position[2][1];
+//             z1 = movebackward_position[2][2];
+//         }
+//         flag2++;
+//         flag2 %= 3;
+//     }
+
+//     for (size_t i = 0; i < AddedNumofLeg; i++)
+//     {
+//         LegConfig *TargetLeg;
+//         xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+//         switch (i)
+//         {
+//         case 0:
+//             TargetLeg->LegMoving(x1, y1, z1 - 50);
+//             break;
+
+//         case 1:
+//             TargetLeg->LegMoving(157.5, 0, -140.8);
+//             // case 1:
+//             //     TargetLeg->LegMoving(x2, y2, z2);
+//             break;
+//         case 2:
+//             TargetLeg->LegMoving(x1, y1, z1 - 50);
+//             break;
+//         case 3:
+//             TargetLeg->LegMoving(157.5, 0, -140.8);
+//             break;
+//         // case 3:
+//         //     TargetLeg->LegMoving(x2, y2, z2);
+//         //     break;
+//         case 4:
+//             TargetLeg->LegMoving(x1, y1, z1 - 50);
+//             break;
+//         case 5:
+//             TargetLeg->LegMoving(157.5, 0, -140.8);
+//             // case 5:
+//             //     TargetLeg->LegMoving(x2, y2, z2);
+//             break;
+//         default:
+//             break;
+//         }
+//     }
+
+//     delay(DSD);
+//     t += DSD;
+// }
+//}
+// void straight()
+// {
+//     int16_t T = 2000;                 // 周期
+//     int16_t DSD = 500;                // 每点间隔
+//     uint8_t flag1 = 0, flag2 = 0;     // 两组腿位置标志位
+//     uint8_t B_flag1 = 0, B_flag2 = 0; // 摆动标志位 1为摆动 0为支撑
+//     float x1 = moveforward_position[2][0], y1 = moveforward_position[2][1], z1 = moveforward_position[2][2], x2 = moveforward_position[2][0], y2 = moveforward_position[2][1], z2 = moveforward_position[2][2];
+//     int16_t t = 0;
+//     while (t <= T)
+//     {
+//         if (t <= T / 2)
+//         {
+//             // 机械腿组1摆动相
+//             x1 = moveforward_position[flag1][0];
+//             y1 = moveforward_position[flag1][1];
+//             z1 = moveforward_position[flag1][2];
+//             if (flag1 == 2)
+//             {
+//                 x2 = moveforward_position[2][0];
+//                 y2 = moveforward_position[2][1];
+//                 z2 = moveforward_position[2][2];
+//             }
+//             flag1++;
+//             flag1 %= 3;
+//         }
+//         if (t > T / 2 && t <= T)
+//         {
+//             // 机械腿组2摆动相
+//             x2 = moveforward_position[flag2][0];
+//             y2 = moveforward_position[flag2][1];
+//             z2 = moveforward_position[flag2][2];
+//             if (flag2 == 2)
+//             {
+//                 x1 = moveforward_position[2][0];
+//                 y1 = moveforward_position[2][1];
+//                 z1 = moveforward_position[2][2];
+//             }
+//             flag2++;
+//             flag2 %= 3;
+//         }
+
+//         for (size_t i = 0; i < AddedNumofLeg; i++)
+//         {
+//             LegConfig *TargetLeg;
+//             xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+//             switch (i)
+//             {
+//             case 0:
+//                 TargetLeg->LegMoving(x1, y1, z1);
+//                 break;
+
+//             case 1:
+//                 TargetLeg->LegMoving(x2, y2, z2);
+//                 break;
+//             case 2:
+//                 TargetLeg->LegMoving(x1, y1, z1);
+//                 break;
+//             case 3:
+//                 TargetLeg->LegMoving(x2, y2, z2);
+//                 break;
+//             case 4:
+//                 TargetLeg->LegMoving(x1, y1, z1);
+//                 break;
+//             case 5:
+//                 TargetLeg->LegMoving(x2, y2, z2);
+//                 break;
+//             default:
+//                 break;
+//             }
+//         }
+
+//         delay(DSD);
+//         t += DSD;
+//     }
+// }
+void back()
+{
+    int16_t DSD = 200; // 每点间隔
+    float T = 2;       // 周期
+    float step = 200;  // 步长
+    float H = 100;     // 步高
+    float t = 0;
+    float Position_Swing[3];
+    float Position_Support[3];
+
+    while (t <= T)
+    {
+
+        if (t <= T / 2)
+        {
+            Position_Swing[0] = 127.4;
+            Position_Swing[1] = -6 * step * pow(t + 1, 5) + 45 * step * pow(t + 1, 4) - 130 * step * pow(t + 1, 3) + 180 * step * pow(t + 1, 2) - 120 * step * (t + 1) + 63 * step / 2;
+            Position_Swing[2] = -64 * H * pow(t, 6) + 192 * H * pow(t, 5) - 192 * H * pow(t, 4) + 64 * H * pow(t, 3) - 140.8;
+
+            Position_Support[0] = 127.4;
+            Position_Support[1] = 6 * step * pow(t, 5) - 15 * step * pow(t, 4) + 10 * step * pow(t, 3) - step / 2;
+            Position_Support[2] = -140.8;
+        }
+        else if (t <= T && t > T / 2)
+        {
+            Position_Support[0] = 127.4;
+            Position_Support[1] = -6 * step * pow(t, 5) + 45 * step * pow(t, 4) - 130 * step * pow(t, 3) + 180 * step * pow(t, 2) - 120 * step * t + 63 * step / 2;
+            Position_Support[2] = -64 * H * pow(t - 1, 6) + 192 * H * pow(t - 1, 5) - 192 * H * pow(t - 1, 4) + 64 * H * pow(t - 1, 3) - 140.8;
+
+            Position_Swing[0] = 127.4;
+            Position_Swing[1] = 6 * step * pow(t - 1, 5) - 15 * step * pow(t - 1, 4) + 10 * step * pow(t - 1, 3) - step / 2;
+            Position_Swing[2] = -140.8;
+        }
+        else
+        {
+        }; // do nothing
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            switch (i)
+            {
+            case 0:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                break;
+
+            case 1:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                // case 1:
+                //     TargetLeg->LegMoving(x2, y2, z2);
+                break;
+            case 2:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                break;
+            case 3:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                break;
+            // case 3:
+            //     TargetLeg->LegMoving(x2, y2, z2);
+            //     break;
+            case 4:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                break;
+            case 5:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                // case 5:
+                //     TargetLeg->LegMoving(x2, y2, z2);
+                break;
+            default:
+                break;
+            }
+        }
+        delay(DSD);
+        t += 0.2;
+    }
+}
+void back_walk_Task(void *pvParameters)
+{
+    while (1)
+    {
+        back();
+        vTaskDelay(1);
+    }
+}
+
+void straight_walk_task(void *pvParameters)
+{
+    while (1)
+    {
+        straight();
+
+        vTaskDelay(1);
+    }
+}
+void back_walk_task(void *pvParameters)
+{
+    while (1)
+    {
+        back();
+
+        vTaskDelay(1);
+    }
+}
+void left()
+{
+    int16_t T = 2000;             // 周期
+    int16_t DSD = 500;            // 每点间隔
+    uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
     int16_t t = 0;
+    float x1 = left_position[2][0], y1 = left_position[2][1], z1 = left_position[2][2];
+    float x2 = left_position[2][0], y2 = left_position[2][1], z2 = left_position[2][2];
+    float x3 = left_position[2][0], y3 = left_position[2][1], z3 = left_position[2][2];
+    float x4 = left_position[2][0], y4 = left_position[2][1], z4 = left_position[2][2];
     while (t <= T)
     {
         if (t <= T / 2)
         {
             // 机械腿组1摆动相
-            x1 = moveforward_position[flag1][0];
-            y1 = moveforward_position[flag1][1];
-            z1 = moveforward_position[flag1][2];
+            x1 = left_position[flag1][0];
+            y1 = left_position[flag1][1];
+            z1 = left_position[flag1][2];
+
+            x2 = right_position[flag1][0];
+            y2 = right_position[flag1][1];
+            z2 = right_position[flag1][2];
             if (flag1 == 2)
             {
-                x2 = moveforward_position[2][0];
-                y2 = moveforward_position[2][1];
-                z2 = moveforward_position[2][2];
+                x3 = right_position[2][0];
+                y3 = right_position[2][1];
+                z3 = right_position[2][2];
+
+                x4 = right_position[2][0];
+                y4 = right_position[2][1];
+                z4 = right_position[2][2];
             }
+
             flag1++;
             flag1 %= 3;
         }
         if (t > T / 2 && t <= T)
         {
             // 机械腿组2摆动相
-            x2 = moveforward_position[flag2][0];
-            y2 = moveforward_position[flag2][1];
-            z2 = moveforward_position[flag2][2];
+            x3 = right_position[flag2][0];
+            y3 = right_position[flag2][1];
+            z3 = right_position[flag2][2];
+
+            x4 = left_position[flag2][0];
+            y4 = left_position[flag2][1];
+            z4 = left_position[flag2][2];
             if (flag2 == 2)
             {
-                x1 = moveforward_position[2][0];
-                y1 = moveforward_position[2][1];
-                z1 = moveforward_position[2][2];
+                x1 = left_position[2][0];
+                y1 = left_position[2][1];
+                z1 = left_position[2][2];
+
+                x2 = right_position[2][0];
+                y2 = right_position[2][1];
+                z2 = right_position[2][2];
             }
+
+            flag2++;
+            flag2 %= 3;
+        }
+
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            switch (i)
+            {
+            case 0:
+                TargetLeg->LegMoving(x3, y3, z3);
+                break;
+
+            case 1:
+                TargetLeg->LegMoving(x2, y2, z2);
+                break;
+            case 2:
+                TargetLeg->LegMoving(x3, y3, z3);
+                break;
+            case 3:
+                TargetLeg->LegMoving(x1, y1, z1);
+                break;
+            case 4:
+                TargetLeg->LegMoving(x4, y4, z4);
+                break;
+            case 5:
+                TargetLeg->LegMoving(x1, y1, z1);
+                break;
+            default:
+                break;
+            }
+        }
+
+        delay(DSD);
+        t += DSD;
+    }
+} 
+void right()
+{
+    int16_t T = 2000;             // 周期
+    int16_t DSD = 500;            // 每点间隔
+    uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
+    int16_t t = 0;
+    float x1 = left_position[2][0], y1 = left_position[2][1], z1 = left_position[2][2];
+    float x2 = left_position[2][0], y2 = left_position[2][1], z2 = left_position[2][2];
+    float x3 = left_position[2][0], y3 = left_position[2][1], z3 = left_position[2][2];
+    float x4 = left_position[2][0], y4 = left_position[2][1], z4 = left_position[2][2];
+    while (t <= T)
+    {
+        if (t <= T / 2)
+        {
+            // 机械腿组1摆动相
+
+            if (flag1 == 2)
+            {
+                // 机械腿组1摆动相
+                x1 = right_position[flag1][0];
+                y1 = right_position[flag1][1];
+                z1 = right_position[flag1][2];
+
+                x2 = left_position[flag1][0];
+                y2 = left_position[flag1][1];
+                z2 = left_position[flag1][2];
+            }
+
+            flag1++;
+            flag1 %= 3;
+        }
+        if (t > T / 2 && t <= T)
+        {
+            // 机械腿组2摆动相
+            x3 = right_position[flag2][0];
+            y3 = right_position[flag2][1];
+            z3 = right_position[flag2][2];
+
+            x2 = left_position[flag2][0];
+            y2 = left_position[flag2][1];
+            z2 = left_position[flag2][2];
+            if (flag2 == 2)
+            {
+                x1 = left_position[2][0];
+                y1 = left_position[2][1];
+                z1 = left_position[2][2];
+
+                x4 = right_position[2][0];
+                y4 = right_position[2][1];
+                z4 = right_position[2][2];
+            }
+
             flag2++;
             flag2 %= 3;
         }
@@ -539,754 +991,451 @@ void straight()
                 TargetLeg->LegMoving(x1, y1, z1);
                 break;
             case 3:
-                TargetLeg->LegMoving(x2, y2, z2);
+                TargetLeg->LegMoving(x3, y3, z3);
                 break;
             case 4:
-                TargetLeg->LegMoving(x1, y1, z1);
+                TargetLeg->LegMoving(x4, y4, z4);
                 break;
             case 5:
-                TargetLeg->LegMoving(x2, y2, z2);
+                TargetLeg->LegMoving(x3, y3, z3);
                 break;
             default:
                 break;
             }
         }
 
-            delay(DSD);
-            t += DSD;
-        }
+        delay(DSD);
+        t += DSD;
     }
-    void back()
+}
+void left_walk_task(void *pvParameters)
+{
+    while (1)
     {
-        int16_t T = 2000;                 // 周期
-        int16_t DSD = 500;                // 每点间隔
-        uint8_t flag1 = 0, flag2 = 0;     // 两组腿位置标志位
-        uint8_t B_flag1 = 0, B_flag2 = 0; // 摆动标志位 1为摆动 0为支撑
-        float x1 = movebackward_position[2][0], y1 = movebackward_position[2][1], z1 = movebackward_position[2][2], x2 = movebackward_position[2][0], y2 = movebackward_position[2][1], z2 = movebackward_position[2][2];
-        int16_t t = 0;
-        while (t <= T)
+        left();
+        vTaskDelay(1);
+    }
+}
+
+
+void right_walk_task(void *pvParameters)
+{
+    while (1)
+    {
+        right();
+        vTaskDelay(1);
+    }
+}
+//work
+void left_cross(void)
+{
+    int16_t T = 2000;             // 周期
+    int16_t DSD = 500;            // 每点间隔
+    uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
+    int16_t t = 0;
+    float x1 = Front_left_position[2][0], y1 = Front_left_position[2][1], z1 = Front_left_position[2][2];
+    float x2 = Mid_left_position[2][0], y2 = Mid_left_position[2][1], z2 = Mid_left_position[2][2];
+    float x3 = Back_left_position[2][0], y3 = Back_left_position[2][1], z3 = Back_left_position[2][2];
+    float x4 = Front_right_position[2][0], y4 = Front_right_position[2][1], z4 = Front_right_position[2][2];
+    float x5 = Mid_right_position[2][0], y5 = Mid_right_position[2][1], z5 = Mid_right_position[2][2];
+    float x6 = Back_right_position[2][0], y6 = Back_right_position[2][1], z6 = Back_right_position[2][2];
+    while (t <= T)
+    {
+        if (t <= T / 2)
         {
-            if (t <= T / 2)
+            // 机械腿组1摆动相
+            x1 = Front_left_position[flag1][0];
+            y1 = Front_left_position[flag1][1];
+            z1 = Front_left_position[flag1][2];
+
+            x3 = Back_left_position[flag1][0];
+            y3 = Back_left_position[flag1][1];
+            z3 = Back_left_position[flag1][2];
+
+            x5 = Mid_right_position[flag1][0];
+            y5 = Mid_right_position[flag1][1];
+            z5 = Mid_right_position[flag1][2];
+            if (flag1 == 2)
             {
-                // 机械腿组1摆动相
-                x1 = movebackward_position[flag1][0];
-                y1 = movebackward_position[flag1][1];
-                z1 = movebackward_position[flag1][2];
-                if (flag1 == 2)
-                {
-                    x2 = movebackward_position[2][0];
-                    y2 = movebackward_position[2][1];
-                    z2 = movebackward_position[2][2];
-                }
-                flag1++;
-                flag1 %= 3;
-            }
-            if (t > T / 2 && t <= T)
-            {
-                // 机械腿组2摆动相
-                x2 = movebackward_position[flag2][0];
-                y2 = movebackward_position[flag2][1];
-                z2 = movebackward_position[flag2][2];
-                if (flag2 == 2)
-                {
-                    x1 = movebackward_position[2][0];
-                    y1 = movebackward_position[2][1];
-                    z1 = movebackward_position[2][2];
-                }
-                flag2++;
-                flag2 %= 3;
+                x2 = Mid_left_position[2][0];
+                y2 = Mid_left_position[2][1];
+                z2 = Mid_left_position[2][2];
+
+                x4 = Front_right_position[2][0];
+                y4 = Front_right_position[2][1];
+                z4 = Front_right_position[2][2];
+
+                x6 = Back_right_position[2][0];
+                y6 = Back_right_position[2][1];
+                z6 = Back_right_position[2][2];
             }
 
-            for (size_t i = 0; i < AddedNumofLeg; i++)
-            {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                switch (i)
-                {
-                case 0:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-
-                case 1:
-                    TargetLeg->LegMoving(x2, y2, z2);
-                    break;
-                case 2:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-                case 3:
-                    TargetLeg->LegMoving(x2, y2, z2);
-                    break;
-                case 4:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-                case 5:
-                    TargetLeg->LegMoving(x2, y2, z2);
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            delay(DSD);
-            t += DSD;
+            flag1++;
+            flag1 %= 3;
         }
-    }
-    void back_walk_Task(void *pvParameters)
-    {
-        while (1)
+        if (t > T / 2 && t <= T)
         {
-            back();
-            vTaskDelay(1);
+            // 机械腿组2摆动相
+            x2 = Mid_left_position[flag2][0];
+            y2 = Mid_left_position[flag2][1];
+            z2 = Mid_left_position[flag2][2];
+
+            x4 = Front_right_position[flag2][0];
+            y4 = Front_right_position[flag2][1];
+            z4 = Front_right_position[flag2][2];
+
+            x6 = Back_right_position[flag2][0];
+            y6 = Back_right_position[flag2][1];
+            z6 = Back_right_position[flag2][2];
+
+            if (flag2 == 2)
+            {
+                x1 = Front_left_position[2][0];
+                y1 = Front_left_position[2][1];
+                z1 = Front_left_position[2][2];
+
+                x3 = Back_left_position[2][0];
+                y3 = Back_left_position[2][1];
+                z3 = Back_left_position[2][2];
+
+                x5 = Mid_right_position[2][0];
+                y5 = Mid_right_position[2][1];
+                z5 = Mid_right_position[2][2];
+            }
+
+            flag2++;
+            flag2 %= 3;
         }
-    }
 
-    void straight_walk_task(void *pvParameters)
-    {
-        while (1)
-        {
-            straight();
-
-            vTaskDelay(1);
-        }
-    }
-    void back_walk_task(void *pvParameters)
-    {
-        while (1)
-        {
-            back();
-
-            vTaskDelay(1);
-        }
-    }
-
-    void left()
-    {
-        int16_t T = 2000;             // 周期
-        int16_t DSD = 500;            // 每点间隔
-        uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
-        int16_t t = 0;
-        float x1 = left_position[2][0], y1 = left_position[2][1], z1 = left_position[2][2];
-        float x2 = Mid_left_position[0][0], y2 = Mid_left_position[0][1], z2 = Mid_left_position[0][2];
-        float x3 = left_position[2][0], y3 = left_position[2][1], z3 = left_position[2][2];
-        float x4 = Mid_right_position[0][0], y4 = Mid_right_position[0][1], z4 = Mid_right_position[0][2];
-        while (t <= T)
-        {
-            if (t <= T / 2)
-            {
-                // 机械腿组1摆动相
-                x1 = left_position[flag1][0];
-                y1 = left_position[flag1][1];
-                z1 = left_position[flag1][2];
-
-                x4 = right_position[flag1][0];
-                y4 = right_position[flag1][1];
-                z4 = right_position[flag1][2];
-                if (flag1 == 2)
-                {
-                    x3 = right_position[2][0];
-                    y3 = right_position[2][1];
-                    z3 = right_position[2][2];
-
-                    x2 = right_position[2][0];
-                    y2 = right_position[2][1];
-                    z2 = right_position[2][2];
-                }
-
-                flag1++;
-                flag1 %= 3;
-            }
-            if (t > T / 2 && t <= T)
-            {
-                // 机械腿组2摆动相
-                x3 = right_position[flag2][0];
-                y3 = right_position[flag2][1];
-                z3 = right_position[flag2][2];
-
-                x2 = left_position[flag2][0];
-                y2 = left_position[flag2][1];
-                z2 = left_position[flag2][2];
-                if (flag2 == 2)
-                {
-                    x1 = left_position[2][0];
-                    y1 = left_position[2][1];
-                    z1 = left_position[2][2];
-
-                    x4 = right_position[2][0];
-                    y4 = right_position[2][1];
-                    z4 = right_position[2][2];
-                }
-
-                flag2++;
-                flag2 %= 3;
-            }
-
-            for (size_t i = 0; i < AddedNumofLeg; i++)
-            {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                switch (i)
-                {
-                case 0:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-
-                case 1:
-                    TargetLeg->LegMoving(x2, y2, z2);
-                    break;
-                case 2:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-                case 3:
-                    TargetLeg->LegMoving(x3, y3, z3);
-                    break;
-                case 4:
-                    TargetLeg->LegMoving(x4, y4, z4);
-                    break;
-                case 5:
-                    TargetLeg->LegMoving(x3, y3, z3);
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            delay(DSD);
-            t += DSD;
-        }
-    }
-    void left_walk_task(void *pvParameters)
-    {
-        while (1)
-        {
-            left();
-            vTaskDelay(1);
-        }
-    }
-
-    void right()
-    {
-        int16_t T = 2000;             // 周期
-        int16_t DSD = 500;            // 每点间隔
-        uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
-        int16_t t = 0;
-        float x1 = left_position[2][0], y1 = left_position[2][1], z1 = left_position[2][2];
-        float x2 = left_position[2][0], y2 = left_position[2][1], z2 = left_position[2][2];
-        float x3 = left_position[2][0], y3 = left_position[2][1], z3 = left_position[2][2];
-        float x4 = left_position[2][0], y4 = left_position[2][1], z4 = left_position[2][2];
-        while (t <= T)
-        {
-            if (t <= T / 2)
-            {
-                // 机械腿组1摆动相
-                x1 = left_position[flag1][0];
-                y1 = left_position[flag1][1];
-                z1 = left_position[flag1][2];
-
-                x2 = right_position[flag1][0];
-                y2 = right_position[flag1][1];
-                z2 = right_position[flag1][2];
-                if (flag1 == 2)
-                {
-                    x3 = right_position[2][0];
-                    y3 = right_position[2][1];
-                    z3 = right_position[2][2];
-
-                    x4 = right_position[2][0];
-                    y4 = right_position[2][1];
-                    z4 = right_position[2][2];
-                }
-
-                flag1++;
-                flag1 %= 3;
-            }
-            if (t > T / 2 && t <= T)
-            {
-                // 机械腿组2摆动相
-                x3 = right_position[flag2][0];
-                y3 = right_position[flag2][1];
-                z3 = right_position[flag2][2];
-
-                x4 = left_position[flag2][0];
-                y4 = left_position[flag2][1];
-                z4 = left_position[flag2][2];
-                if (flag2 == 2)
-                {
-                    x1 = left_position[2][0];
-                    y1 = left_position[2][1];
-                    z1 = left_position[2][2];
-
-                    x2 = right_position[2][0];
-                    y2 = right_position[2][1];
-                    z2 = right_position[2][2];
-                }
-
-                flag2++;
-                flag2 %= 3;
-            }
-
-            for (size_t i = 0; i < AddedNumofLeg; i++)
-            {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                switch (i)
-                {
-                case 0:
-                    TargetLeg->LegMoving(x3, y3, z3);
-                    break;
-
-                case 1:
-                    TargetLeg->LegMoving(x2, y2, z2);
-                    break;
-                case 2:
-                    TargetLeg->LegMoving(x3, y3, z3);
-                    break;
-                case 3:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-                case 4:
-                    TargetLeg->LegMoving(x4, y4, z4);
-                    break;
-                case 5:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            delay(DSD);
-            t += DSD;
-        }
-    }
-    void right_walk_task(void *pvParameters)
-    {
-        while (1)
-        {
-            right();
-            vTaskDelay(1);
-        }
-    }
-
-    void left_cross(void)
-    {
-        int16_t T = 2000;             // 周期
-        int16_t DSD = 500;            // 每点间隔
-        uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
-        int16_t t = 0;
-        float x1 = Front_left_position[2][0], y1 = Front_left_position[2][1], z1 = Front_left_position[2][2];
-        float x2 = Mid_left_position[2][0], y2 = Mid_left_position[2][1], z2 = Mid_left_position[2][2];
-        float x3 = Back_left_position[2][0], y3 = Back_left_position[2][1], z3 = Back_left_position[2][2];
-        float x4 = Front_right_position[2][0], y4 = Front_right_position[2][1], z4 = Front_right_position[2][2];
-        float x5 = Mid_right_position[2][0], y5 = Mid_right_position[2][1], z5 = Mid_right_position[2][2];
-        float x6 = Back_right_position[2][0], y6 = Back_right_position[2][1], z6 = Back_right_position[2][2];
-        while (t <= T)
-        {
-            if (t <= T / 2)
-            {
-                // 机械腿组1摆动相
-                x1 = Front_left_position[flag1][0];
-                y1 = Front_left_position[flag1][1];
-                z1 = Front_left_position[flag1][2];
-
-                x3 = Back_left_position[flag1][0];
-                y3 = Back_left_position[flag1][1];
-                z3 = Back_left_position[flag1][2];
-
-                x5 = Mid_right_position[flag1][0];
-                y5 = Mid_right_position[flag1][1];
-                z5 = Mid_right_position[flag1][2];
-                if (flag1 == 2)
-                {
-                    x2 = Mid_left_position[2][0];
-                    y2 = Mid_left_position[2][1];
-                    z2 = Mid_left_position[2][2];
-
-                    x4 = Front_right_position[2][0];
-                    y4 = Front_right_position[2][1];
-                    z4 = Front_right_position[2][2];
-
-                    x6 = Back_right_position[2][0];
-                    y6 = Back_right_position[2][1];
-                    z6 = Back_right_position[2][2];
-                }
-
-                flag1++;
-                flag1 %= 3;
-            }
-            if (t > T / 2 && t <= T)
-            {
-                // 机械腿组2摆动相
-                x2 = Mid_left_position[flag2][0];
-                y2 = Mid_left_position[flag2][1];
-                z2 = Mid_left_position[flag2][2];
-
-                x4 = Front_right_position[flag2][0];
-                y4 = Front_right_position[flag2][1];
-                z4 = Front_right_position[flag2][2];
-
-                x6 = Back_right_position[flag2][0];
-                y6 = Back_right_position[flag2][1];
-                z6 = Back_right_position[flag2][2];
-
-                if (flag2 == 2)
-                {
-                    x1 = Front_left_position[2][0];
-                    y1 = Front_left_position[2][1];
-                    z1 = Front_left_position[2][2];
-
-                    x3 = Back_left_position[2][0];
-                    y3 = Back_left_position[2][1];
-                    z3 = Back_left_position[2][2];
-
-                    x5 = Mid_right_position[2][0];
-                    y5 = Mid_right_position[2][1];
-                    z5 = Mid_right_position[2][2];
-                }
-
-                flag2++;
-                flag2 %= 3;
-            }
-
-            for (size_t i = 0; i < AddedNumofLeg; i++)
-            {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                switch (i)
-                {
-                case 0:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-
-                case 1:
-                    TargetLeg->LegMoving(x2, y2, z2);
-                    break;
-                case 2:
-                    TargetLeg->LegMoving(x3, y3, z3);
-                    break;
-                case 3:
-                    TargetLeg->LegMoving(x4, y4, z4);
-                    break;
-                case 4:
-                    TargetLeg->LegMoving(x5, y5, z5);
-                    break;
-                case 5:
-                    TargetLeg->LegMoving(x6, y6, z6);
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            delay(DSD);
-            t += DSD;
-        }
-    }
-    void left_cross_walk_task(void *pvParameters)
-    {
-        while (1)
-        {
-            left_cross();
-            vTaskDelay(1);
-        }
-    }
-
-    void right_cross(void)
-    {
-        int16_t T = 2000;             // 周期
-        int16_t DSD = 500;            // 每点间隔
-        uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
-        int16_t t = 0;
-        float x1 = Front_right_position[2][0], y1 = Front_right_position[2][1], z1 = Front_right_position[2][2];
-        float x2 = Mid_left_position[2][0], y2 = Mid_left_position[2][1], z2 = Mid_left_position[2][2];
-        float x3 = Back_right_position[2][0], y3 = Back_right_position[2][1], z3 = Back_right_position[2][2];
-        float x4 = Front_left_position[2][0], y4 = Front_left_position[2][1], z4 = Front_left_position[2][2];
-        float x5 = Mid_right_position[2][0], y5 = Front_left_position[2][1], z5 = Front_left_position[2][2];
-        float x6 = Back_left_position[2][0], y6 = Back_left_position[2][1], z6 = Back_left_position[2][2];
-        while (t <= T)
-        {
-            if (t <= T / 2)
-            {
-                // 机械腿组1摆动相
-                x4 = Front_left_position[flag1][0];
-                y4 = Front_left_position[flag1][1];
-                z4 = Front_left_position[flag1][2];
-
-                x6 = Back_left_position[flag1][0];
-                y6 = Back_left_position[flag1][1];
-                z6 = Back_left_position[flag1][2];
-
-                x2 = Mid_right_position[flag1][0];
-                y2 = Mid_right_position[flag1][1];
-                z2 = Mid_right_position[flag1][2];
-                if (flag1 == 2)
-                {
-                    x1 = Front_right_position[2][0];
-                    y1 = Front_right_position[2][1];
-                    z1 = Front_right_position[2][2];
-
-                    x3 = Back_right_position[2][0];
-                    y3 = Back_right_position[2][1];
-                    z3 = Back_right_position[2][2];
-
-                    x5 = Mid_left_position[2][0];
-                    y5 = Mid_left_position[2][1];
-                    z5 = Mid_left_position[2][2];
-                }
-
-                flag1++;
-                flag1 %= 3;
-            }
-            if (t > T / 2 && t <= T)
-            {
-                // 机械腿组2摆动相
-
-                x1 = Front_right_position[flag2][0];
-                y1 = Front_right_position[flag2][1];
-                z1 = Front_right_position[flag2][2];
-
-                x3 = Back_right_position[flag2][0];
-                y3 = Back_right_position[flag2][1];
-                z3 = Back_right_position[flag2][2];
-
-                x5 = Mid_left_position[flag2][0];
-                y5 = Mid_left_position[flag2][1];
-                z5 = Mid_left_position[flag2][2];
-
-                if (flag2 == 2)
-                {
-                    x4 = Front_left_position[2][0];
-                    y4 = Front_left_position[2][1];
-                    z4 = Front_left_position[2][2];
-
-                    x2 = Mid_right_position[2][0];
-                    y2 = Mid_right_position[2][1];
-                    z2 = Mid_right_position[2][2];
-
-                    x6 = Back_left_position[2][0];
-                    y6 = Back_left_position[2][1];
-                    z6 = Back_left_position[2][2];
-                }
-
-                flag2++;
-                flag2 %= 3;
-            }
-
-            for (size_t i = 0; i < AddedNumofLeg; i++)
-            {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                switch (i)
-                {
-                case 0:
-                    TargetLeg->LegMoving(x1, y1, z1);
-                    break;
-
-                case 1:
-                    TargetLeg->LegMoving(x2, y2, z2);
-                    break;
-                case 2:
-                    TargetLeg->LegMoving(x3, y3, z3);
-                    break;
-                case 3:
-                    TargetLeg->LegMoving(x4, y4, z4);
-                    break;
-                case 4:
-                    TargetLeg->LegMoving(x5, y5, z5);
-                    break;
-                case 5:
-                    TargetLeg->LegMoving(x6, y6, z6);
-                    break;
-                default:
-                    break;
-                }
-            }
-
-            delay(DSD);
-            t += DSD;
-        }
-    }
-    void right_cross_walk_task(void *pvParameters)
-    {
-        while (1)
-        {
-            right_cross();
-            vTaskDelay(1);
-        }
-    }
-    void LegAngleQuery_Task(void *pvParameters)
-    {
-        TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
         for (size_t i = 0; i < AddedNumofLeg; i++)
         {
             LegConfig *TargetLeg;
             xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-            TargetLeg->SetDampMode();
-        }
-        Target->TCP.println("[Leg Power]All Leg is Set to Damp Mode.");
-        Target->TCP.println("[LegAngleQuery]choose the mode you want to query:1.raw angle 2.real angle 3.both");
-        u8_t mode = 1;
-
-        while (1)
-        {
-            if (Target->ReceiveData != "")
+            switch (i)
             {
-                mode = Target->ReceiveData.toInt();
-                Target->ReceiveData = "";
-                Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
-                while (Target->ReceiveData == "")
-                    ;
-                if (mode == 1)
-                {
-                    Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
-                    int LegNum = Target->ReceiveData.toInt() - 1;
-                    if (LegNum < AddedNumofLeg)
-                    {
-                        LegConfig *TargetLeg;
-                        xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
-                        while (1)
-                        {
-                            Target->TCP.printf("[LegAngleQuery]The Raw angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle() - defaultAngleArray[LegNum][0], TargetLeg->kneeServo.queryAngle() - defaultAngleArray[LegNum][1], TargetLeg->ankleServo.queryAngle() - defaultAngleArray[LegNum][2]);
-                            vTaskDelay(100 / portTICK_PERIOD_MS);
-                        }
-                    }
-                }
-                else if (mode == 2)
-                {
-                    Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
-                    int LegNum = Target->ReceiveData.toInt() - 1;
-                    if (LegNum < AddedNumofLeg)
-                    {
-                        LegConfig *TargetLeg;
-                        xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
-                        while (1)
-                        {
-                            Target->TCP.printf("[LegAngleQuery]The real Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
-                            vTaskDelay(100 / portTICK_PERIOD_MS);
-                        }
-                    }
-                }
-                else if (mode == 3)
-                {
-                    Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
-                    int LegNum = Target->ReceiveData.toInt() - 1;
-                    if (LegNum < AddedNumofLeg)
-                    {
-                        LegConfig *TargetLeg;
-                        xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
-                        while (1)
-                        {
-                            Target->TCP.printf("[LegAngleQuery]The Raw Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle() - defaultAngleArray[LegNum][0], TargetLeg->kneeServo.queryAngle() - defaultAngleArray[LegNum][1], TargetLeg->ankleServo.queryAngle() - defaultAngleArray[LegNum][2]);
-                            Target->TCP.printf("[LegAngleQuery]The real Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
-                            vTaskDelay(100 / portTICK_PERIOD_MS);
-                        }
-                    }
-                }
-                else
-                {
-                    Target->TCP.println("[LegAngleQuery]The mode you choose is out of range.");
-                    Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
-                }
-                Target->ReceiveData = "";
+            case 0:
+                TargetLeg->LegMoving(x1, y1, z1);
+                break;
+
+            case 1:
+                TargetLeg->LegMoving(x2, y2, z2);
+                break;
+            case 2:
+                TargetLeg->LegMoving(x3, y3, z3);
+                break;
+            case 3:
+                TargetLeg->LegMoving(x4, y4, z4);
+                break;
+            case 4:
+                TargetLeg->LegMoving(x5, y5, z5);
+                break;
+            case 5:
+                TargetLeg->LegMoving(x6, y6, z6);
+                break;
+            default:
+                break;
             }
-            vTaskDelay(1);
         }
+
+        delay(DSD);
+        t += DSD;
     }
-    void LegPowerDown_Task(void *pvParameters)
+}
+void left_cross_walk_task(void *pvParameters)
+{
+    while (1)
     {
-        TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+        left_cross();
+        vTaskDelay(1);
+    }
+}
 
-        Target->TCP.println("[LegPowerDown]Please enter the Serial Number of the Leg you want to PowerDown.");
-        while (1)
+void right_cross(void)
+{
+    int16_t T = 2000;             // 周期
+    int16_t DSD = 500;            // 每点间隔
+    uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
+    int16_t t = 0;
+    float x1 = Front_right_position[2][0], y1 = Front_right_position[2][1], z1 = Front_right_position[2][2];
+    float x2 = Mid_left_position[2][0], y2 = Mid_left_position[2][1], z2 = Mid_left_position[2][2];
+    float x3 = Back_right_position[2][0], y3 = Back_right_position[2][1], z3 = Back_right_position[2][2];
+    float x4 = Front_left_position[2][0], y4 = Front_left_position[2][1], z4 = Front_left_position[2][2];
+    float x5 = Mid_right_position[2][0], y5 = Front_left_position[2][1], z5 = Front_left_position[2][2];
+    float x6 = Back_left_position[2][0], y6 = Back_left_position[2][1], z6 = Back_left_position[2][2];
+    while (t <= T)
+    {
+        if (t <= T / 2)
         {
-            if (Target->ReceiveData != "")
-            {
-                Target->TCP.printf("[LegPowerDown]The Serial Number of the Leg you want to PowerDown is %s.\n", Target->ReceiveData.c_str());
-                int LegNum = Target->ReceiveData.toInt() - 1;
-                if (Target->ReceiveData == "all")
-                {
-                    for (size_t i = 0; i < AddedNumofLeg; i++)
-                    {
-                        LegConfig *TargetLeg;
-                        xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                        TargetLeg->LegPowerDown();
-                        Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", i);
-                    }
-                    Target->Terminal_TaskHandle = NULL;
-                    Target->truncateStream = false;
-                    vTaskDelete(NULL);
-                }
-                else if (LegNum < AddedNumofLeg)
-                {
-                    LegConfig *TargetLeg;
-                    xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
-                    TargetLeg->LegPowerDown();
-                    Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", LegNum + 1);
-                    Target->Terminal_TaskHandle = NULL;
-                    Target->truncateStream = false;
-                    vTaskDelete(NULL);
-                }
+            // 机械腿组1摆动相
+            x4 = Front_left_position[flag1][0];
+            y4 = Front_left_position[flag1][1];
+            z4 = Front_left_position[flag1][2];
 
-                else
-                {
-                    Target->TCP.println("[LegPowerDown]The Serial Number is out of range.");
-                    Target->TCP.println("[LegPowerDown]Please enter the Serial Number of the Leg you want to PowerDown.");
-                }
-                Target->ReceiveData = "";
+            x6 = Back_left_position[flag1][0];
+            y6 = Back_left_position[flag1][1];
+            z6 = Back_left_position[flag1][2];
+
+            x2 = Mid_right_position[flag1][0];
+            y2 = Mid_right_position[flag1][1];
+            z2 = Mid_right_position[flag1][2];
+            if (flag1 == 2)
+            {
+                x1 = Front_right_position[2][0];
+                y1 = Front_right_position[2][1];
+                z1 = Front_right_position[2][2];
+
+                x3 = Back_right_position[2][0];
+                y3 = Back_right_position[2][1];
+                z3 = Back_right_position[2][2];
+
+                x5 = Mid_left_position[2][0];
+                y5 = Mid_left_position[2][1];
+                z5 = Mid_left_position[2][2];
             }
-            vTaskDelay(1);
+
+            flag1++;
+            flag1 %= 3;
         }
-    }
-    void LegMoving_Task(void *pvParameters)
-    {
-        TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
-        Target->TCP.println("[LegMoving]Please enter the Serial Number of the Leg you want to Moving.");
-        while (1)
+        if (t > T / 2 && t <= T)
         {
-            if (Target->ReceiveData != "")
+            // 机械腿组2摆动相
+
+            x1 = Front_right_position[flag2][0];
+            y1 = Front_right_position[flag2][1];
+            z1 = Front_right_position[flag2][2];
+
+            x3 = Back_right_position[flag2][0];
+            y3 = Back_right_position[flag2][1];
+            z3 = Back_right_position[flag2][2];
+
+            x5 = Mid_left_position[flag2][0];
+            y5 = Mid_left_position[flag2][1];
+            z5 = Mid_left_position[flag2][2];
+
+            if (flag2 == 2)
             {
-                Target->TCP.printf("[LegMoving]The Serial Number of the Leg you want to Moving is %s.\n", Target->ReceiveData.c_str());
+                x4 = Front_left_position[2][0];
+                y4 = Front_left_position[2][1];
+                z4 = Front_left_position[2][2];
+
+                x2 = Mid_right_position[2][0];
+                y2 = Mid_right_position[2][1];
+                z2 = Mid_right_position[2][2];
+
+                x6 = Back_left_position[2][0];
+                y6 = Back_left_position[2][1];
+                z6 = Back_left_position[2][2];
+            }
+
+            flag2++;
+            flag2 %= 3;
+        }
+
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            switch (i)
+            {
+            case 0:
+                TargetLeg->LegMoving(x1, y1, z1);
+                break;
+
+            case 1:
+                TargetLeg->LegMoving(x2, y2, z2);
+                break;
+            case 2:
+                TargetLeg->LegMoving(x3, y3, z3);
+                break;
+            case 3:
+                TargetLeg->LegMoving(x4, y4, z4);
+                break;
+            case 4:
+                TargetLeg->LegMoving(x5, y5, z5);
+                break;
+            case 5:
+                TargetLeg->LegMoving(x6, y6, z6);
+                break;
+            default:
+                break;
+            }
+        }
+
+        delay(DSD);
+        t += DSD;
+    }
+}
+void right_cross_walk_task(void *pvParameters)
+{
+    while (1)
+    {
+        right_cross();
+        vTaskDelay(1);
+    }
+}
+void LegAngleQuery_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+    for (size_t i = 0; i < AddedNumofLeg; i++)
+    {
+        LegConfig *TargetLeg;
+        xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+        TargetLeg->SetDampMode();
+    }
+    Target->TCP.println("[Leg Power]All Leg is Set to Damp Mode.");
+    Target->TCP.println("[LegAngleQuery]choose the mode you want to query:1.raw angle 2.real angle 3.both");
+    u8_t mode = 1;
+
+    while (1)
+    {
+        if (Target->ReceiveData != "")
+        {
+            mode = Target->ReceiveData.toInt();
+            Target->ReceiveData = "";
+            Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
+            while (Target->ReceiveData == "")
+                ;
+            if (mode == 1)
+            {
+                Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
                 int LegNum = Target->ReceiveData.toInt() - 1;
-                Target->ReceiveData = "";
                 if (LegNum < AddedNumofLeg)
                 {
                     LegConfig *TargetLeg;
                     xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
-                    Target->TCP.printf("loop? y/n\n");
-                    while (Target->ReceiveData == "")
-                        ;
-
-                    if (Target->ReceiveData == "y")
+                    while (1)
                     {
-                        while (1)
-                        {
-                            TargetLeg->LegMoving();
-                        }
+                        Target->TCP.printf("[LegAngleQuery]The Raw angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle() - defaultAngleArray[LegNum][0], TargetLeg->kneeServo.queryAngle() - defaultAngleArray[LegNum][1], TargetLeg->ankleServo.queryAngle() - defaultAngleArray[LegNum][2]);
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
                     }
-                    else if (Target->ReceiveData == "n")
+                }
+            }
+            else if (mode == 2)
+            {
+                Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
+                int LegNum = Target->ReceiveData.toInt() - 1;
+                if (LegNum < AddedNumofLeg)
+                {
+                    LegConfig *TargetLeg;
+                    xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                    while (1)
+                    {
+                        Target->TCP.printf("[LegAngleQuery]The real Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+                }
+            }
+            else if (mode == 3)
+            {
+                Target->TCP.printf("[LegAngleQuery]The Serial Number of the Leg you want to Query is %s.\n", Target->ReceiveData.c_str());
+                int LegNum = Target->ReceiveData.toInt() - 1;
+                if (LegNum < AddedNumofLeg)
+                {
+                    LegConfig *TargetLeg;
+                    xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                    while (1)
+                    {
+                        Target->TCP.printf("[LegAngleQuery]The Raw Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle() - defaultAngleArray[LegNum][0], TargetLeg->kneeServo.queryAngle() - defaultAngleArray[LegNum][1], TargetLeg->ankleServo.queryAngle() - defaultAngleArray[LegNum][2]);
+                        Target->TCP.printf("[LegAngleQuery]The real Angle is %f,%f,%f.\n", TargetLeg->hipServo.queryAngle(), TargetLeg->kneeServo.queryAngle(), TargetLeg->ankleServo.queryAngle());
+                        vTaskDelay(100 / portTICK_PERIOD_MS);
+                    }
+                }
+            }
+            else
+            {
+                Target->TCP.println("[LegAngleQuery]The mode you choose is out of range.");
+                Target->TCP.println("[LegAngleQuery]Please enter the Serial Number of the Leg you want to Query.");
+            }
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
+    }
+}
+void LegPowerDown_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+
+    Target->TCP.println("[LegPowerDown]Please enter the Serial Number of the Leg you want to PowerDown.");
+    while (1)
+    {
+        if (Target->ReceiveData != "")
+        {
+            Target->TCP.printf("[LegPowerDown]The Serial Number of the Leg you want to PowerDown is %s.\n", Target->ReceiveData.c_str());
+            int LegNum = Target->ReceiveData.toInt() - 1;
+            if (Target->ReceiveData == "all")
+            {
+                for (size_t i = 0; i < AddedNumofLeg; i++)
+                {
+                    LegConfig *TargetLeg;
+                    xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+                    TargetLeg->LegPowerDown();
+                    Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", i);
+                }
+                Target->Terminal_TaskHandle = NULL;
+                Target->truncateStream = false;
+                vTaskDelete(NULL);
+            }
+            else if (LegNum < AddedNumofLeg)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                TargetLeg->LegPowerDown();
+                Target->TCP.printf("[LegPowerDown]Leg %d is PowerDown.\n", LegNum + 1);
+                Target->Terminal_TaskHandle = NULL;
+                Target->truncateStream = false;
+                vTaskDelete(NULL);
+            }
+
+            else
+            {
+                Target->TCP.println("[LegPowerDown]The Serial Number is out of range.");
+                Target->TCP.println("[LegPowerDown]Please enter the Serial Number of the Leg you want to PowerDown.");
+            }
+            Target->ReceiveData = "";
+        }
+        vTaskDelay(1);
+    }
+}
+void LegMoving_Task(void *pvParameters)
+{
+    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
+    Target->TCP.println("[LegMoving]Please enter the Serial Number of the Leg you want to Moving.");
+    while (1)
+    {
+        if (Target->ReceiveData != "")
+        {
+            Target->TCP.printf("[LegMoving]The Serial Number of the Leg you want to Moving is %s.\n", Target->ReceiveData.c_str());
+            int LegNum = Target->ReceiveData.toInt() - 1;
+            Target->ReceiveData = "";
+            if (LegNum < AddedNumofLeg)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[LegNum], &TargetLeg, portMAX_DELAY);
+                Target->TCP.printf("loop? y/n\n");
+                while (Target->ReceiveData == "")
+                    ;
+
+                if (Target->ReceiveData == "y")
+                {
+                    while (1)
                     {
                         TargetLeg->LegMoving();
                     }
-
-                    vTaskDelete(NULL);
                 }
-                else
+                else if (Target->ReceiveData == "n")
                 {
-                    Target->TCP.println("[LegMoving]The Serial Number is out of range.");
-                    Target->TCP.println("[LegMoving]Please enter the Serial Number of the Leg you want to Moving.");
+                    TargetLeg->LegMoving();
                 }
-                Target->ReceiveData = "";
+
+                vTaskDelete(NULL);
             }
-            vTaskDelay(1);
+            else
+            {
+                Target->TCP.println("[LegMoving]The Serial Number is out of range.");
+                Target->TCP.println("[LegMoving]Please enter the Serial Number of the Leg you want to Moving.");
+            }
+            Target->ReceiveData = "";
         }
+        vTaskDelay(1);
     }
-
-    // void Legdebug_Task(void *pvParameters)
-    // {
-    //     LegConfig *target = (LegConfig *)pvParameters;
-    //     while(true)
-    //     {
-    //         if(target->)
-
-    //     }
-
-    // }
+}
