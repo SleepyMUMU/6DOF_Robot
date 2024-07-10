@@ -42,7 +42,7 @@
 #define defaultServoID3 3
 #define numofLeg 6
 #define defaultLegName "UnNameLeg"
-#define defaultRunTime 100
+#define defaultRunTime 200
 // ..Wanning: These default<xxx> should NOT used in the original code
 /**********************Other**********************/
 /*
@@ -73,7 +73,7 @@
 
 #define defaultLeg4HipAngle -10.4 // 舵机原始角度
 #define defaultLeg4KneeAngle 82.0// 舵机原始角度
-#define defaultLeg4AnkleAngle -42.9 // 舵机原始角度
+#define defaultLeg4AnkleAngle -55.1 // 舵机原始角度
 
 #define defaultLeg5HipAngle 4.9   // 舵机原始角度
 #define defaultLeg5KneeAngle -0.1 // 舵机原始角度
