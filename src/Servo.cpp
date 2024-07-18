@@ -1033,84 +1033,58 @@ void right_walk_task(void *pvParameters)
 // work
 void left_cross(void)
 {
-    int16_t T = 2000;             // 周期
-    int16_t DSD = 500;            // 每点间隔
-    uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
-    int16_t t = 0;
-    float x1 = Front_left_position[2][0], y1 = Front_left_position[2][1], z1 = Front_left_position[2][2];
-    float x2 = Mid_left_position[2][0], y2 = Mid_left_position[2][1], z2 = Mid_left_position[2][2];
-    float x3 = Back_left_position[2][0], y3 = Back_left_position[2][1], z3 = Back_left_position[2][2];
-    float x4 = Front_right_position[2][0], y4 = Front_right_position[2][1], z4 = Front_right_position[2][2];
-    float x5 = Mid_right_position[2][0], y5 = Mid_right_position[2][1], z5 = Mid_right_position[2][2];
-    float x6 = Back_right_position[2][0], y6 = Back_right_position[2][1], z6 = Back_right_position[2][2];
+     int16_t DSD = 500; // 每点间隔
+    float T = 2;       // 周期
+    float step = 100;  // 步长
+    float H = 60;      // 步高
+    float t = 0;
+    float Position_Swing_L[3];
+    float Position_Swing_R[3];
+    float Position_Support_L[3];
+    float Position_Support_R[3];
+
     while (t <= T)
     {
+
         if (t <= T / 2)
         {
-            // 机械腿组1摆动相
-            x1 = Front_left_position[flag1][0];
-            y1 = Front_left_position[flag1][1];
-            z1 = Front_left_position[flag1][2];
+            Position_Swing_R[0] = 6 * step * pow(t, 5) - 15 * step * pow(t, 4) + 10 * step * pow(t, 3) + 108.4; // 0~step
+            Position_Swing_R[1] = 0;
+            Position_Swing_R[2] = -9000 * pow(t, 7) + (29100 - 64 * H) * pow(t, 6) + (192 * H - 33750) * pow(t, 5) + (16425 - 192 * H) * pow(t, 4) + (64 * H - 2850) * pow(t, 3) - 104.8; // 76.6; //(-30 + H) * pow(t, 5) - (60 - 2 * H) * pow(t, 4) + (-30 + H) * pow(t, 3) - 76.6; // 0~H
 
-            x3 = Back_left_position[flag1][0];
-            y3 = Back_left_position[flag1][1];
-            z3 = Back_left_position[flag1][2];
+            Position_Swing_L[0] = 6 * step * pow(1 - t, 5) - 15 * step * pow(1 - t, 4) + 10 * step * pow(1 - t, 3) + 108.4; // step~0
+            Position_Swing_L[1] = 0;
+            Position_Swing_L[2] = -9000 * pow(1 - t, 7) + (29100 - 64 * H) * pow(1 - t, 6) + (192 * H - 33750) * pow(1 - t, 5) + (16425 - 192 * H) * pow(1 - t, 4) + (64 * H - 2850) * pow(1 - t, 3) - 104.8; // //(-30 + H) * pow(1 - t, 3) - (60 - 2 * H) * pow(1 - t, 4) + (-30 + H) * pow(1 - t, 5) - 76.6; // H~0
 
-            x5 = Mid_right_position[flag1][0];
-            y5 = Mid_right_position[flag1][1];
-            z5 = Mid_right_position[flag1][2];
-            if (flag1 == 2)
-            {
-                x2 = Mid_left_position[2][0];
-                y2 = Mid_left_position[2][1];
-                z2 = Mid_left_position[2][2];
+            Position_Support_R[0] = -6 * step * pow(t + 1, 5) + 45 * step * pow(t + 1, 4) - 130 * step * pow(t + 1, 3) + 180 * step * pow(t + 1, 2) - 120 * step * (t + 1) + 32 * step + 108.4; // step~0
+            Position_Support_R[1] = 0;
+            Position_Support_R[2] = -75 + 75 * pow(t, 6) - 76.6; // H~0
 
-                x4 = Front_right_position[2][0];
-                y4 = Front_right_position[2][1];
-                z4 = Front_right_position[2][2];
-
-                x6 = Back_right_position[2][0];
-                y6 = Back_right_position[2][1];
-                z6 = Back_right_position[2][2];
-            }
-
-            flag1++;
-            flag1 %= 3;
+            Position_Support_L[0] = 6 * step * pow(t, 5) - 15 * step * pow(t, 4) + 10 * step * pow(t, 3) + 108.4; // 0~step-6 * step * pow(2 - t, 5) + 45 * step * pow(2 - t, 4) - 130 * step * pow(2 - t, 3) + 180 * step * pow(2 - t, 2) - 120 * step * (2 - t) + 32 * step + 108.4; // 0~step
+            Position_Support_L[1] = 0;
+            Position_Support_L[2] = -75 + 75 * pow(1 - t, 6) - 76.6; //(-50) * pow(t, 3) + (100) * pow(t, 4) + (-50) * pow(t, 5) - 76.6; // 0~H
         }
-        if (t > T / 2 && t <= T)
+        else if (t <= T && t > T / 2)
         {
-            // 机械腿组2摆动相
-            x2 = Mid_left_position[flag2][0];
-            y2 = Mid_left_position[flag2][1];
-            z2 = Mid_left_position[flag2][2];
+            Position_Support_L[0] = -6 * step * pow(t, 5) + 45 * step * pow(t, 4) - 130 * step * pow(t, 3) + 180 * step * pow(t, 2) - 120 * step * t + 32 * step + 108.4; // step~0
+            Position_Support_L[1] = 0;
+            Position_Support_L[2] = -9000 * pow(2 - t, 7) + (29100 - 64 * H) * pow(2 - t, 6) + (192 * H - 33750) * pow(2 - t, 5) + (16425 - 192 * H) * pow(2 - t, 4) + (64 * H - 2850) * pow(2 - t, 3) - 104.8; //// H~0
 
-            x4 = Front_right_position[flag2][0];
-            y4 = Front_right_position[flag2][1];
-            z4 = Front_right_position[flag2][2];
+            Position_Support_R[0] = 6 * step * pow(t - 1, 5) - 15 * step * pow(t - 1, 4) + 10 * step * pow(t - 1, 3) + 108.4; // 0~step
+            Position_Support_R[1] = 0;
+            Position_Support_R[2] = -9000 * pow(t - 1, 7) + (29100 - 64 * H) * pow(t - 1, 6) + (192 * H - 33750) * pow(t - 1, 5) + (16425 - 192 * H) * pow(t - 1, 4) + (64 * H - 2850) * pow(t - 1, 3) - 104.8; //// 0~H
 
-            x6 = Back_right_position[flag2][0];
-            y6 = Back_right_position[flag2][1];
-            z6 = Back_right_position[flag2][2];
+            Position_Swing_R[0] = -6 * step * pow(t, 5) + 45 * step * pow(t, 4) - 130 * step * pow(t, 3) + 180 * step * pow(t, 2) - 120 * step * t + 32 * step + 108.4; // step~0
+            Position_Swing_R[1] = 0;
+            Position_Swing_R[2] = -75 + 75 * pow(t - 1, 6) - 76.6; //-75 + 50 * pow(t - 1, 3) + (-100) * pow(t - 1, 4) + (75) * pow(t - 1, 5) - 76.6; // H~0
 
-            if (flag2 == 2)
-            {
-                x1 = Front_left_position[2][0];
-                y1 = Front_left_position[2][1];
-                z1 = Front_left_position[2][2];
-
-                x3 = Back_left_position[2][0];
-                y3 = Back_left_position[2][1];
-                z3 = Back_left_position[2][2];
-
-                x5 = Mid_right_position[2][0];
-                y5 = Mid_right_position[2][1];
-                z5 = Mid_right_position[2][2];
-            }
-
-            flag2++;
-            flag2 %= 3;
+            Position_Swing_L[0] = 6 * step * pow(t - 1, 5) - 15 * step * pow(t - 1, 4) + 10 * step * pow(t - 1, 3) + 108.4; // 0~step
+            Position_Swing_L[1] = 0;
+            Position_Swing_L[2] = -75 + 75 * pow(2 - t, 6) - 76.6; //(-50) * pow(t - 1, 3) + (100) * pow(t - 1, 4) + (-50) * pow(t - 1, 5) - 76.6; // 0~H
         }
-
+        else
+        {
+        }; // do nothing
         for (size_t i = 0; i < AddedNumofLeg; i++)
         {
             LegConfig *TargetLeg;
@@ -1118,32 +1092,149 @@ void left_cross(void)
             switch (i)
             {
             case 0:
-                TargetLeg->LegMoving(x1, y1, z1);
+                TargetLeg->LegMoving(Position_Swing_L[0], Position_Swing_L[1], Position_Swing_L[2]);
                 break;
 
             case 1:
-                TargetLeg->LegMoving(x2, y2, z2);
+                TargetLeg->LegMoving(Position_Support_L[0], Position_Support_L[1], Position_Support_L[2]);
+                // case 1:
+                //     TargetLeg->LegMoving(x2, y2, z2);
                 break;
             case 2:
-                TargetLeg->LegMoving(x3, y3, z3);
+                TargetLeg->LegMoving(Position_Swing_L[0], Position_Swing_L[1], Position_Swing_L[2]);
                 break;
             case 3:
-                TargetLeg->LegMoving(x4, y4, z4);
+                TargetLeg->LegMoving(Position_Support_R[0], Position_Support_R[1], Position_Support_R[2]);
                 break;
+            // case 3:
+            //     TargetLeg->LegMoving(x2, y2, z2);
+            //     break;
             case 4:
-                TargetLeg->LegMoving(x5, y5, z5);
+                TargetLeg->LegMoving(Position_Swing_R[0], Position_Swing_R[1], Position_Swing_R[2]);
                 break;
             case 5:
-                TargetLeg->LegMoving(x6, y6, z6);
+                TargetLeg->LegMoving(Position_Support_R[0], Position_Support_R[1], Position_Support_R[2]);
+                // case 5:
+                //     TargetLeg->LegMoving(x2, y2, z2);
                 break;
             default:
                 break;
             }
         }
-
         delay(DSD);
-        t += DSD;
+        t += 0.5;
     }
+    // int16_t T = 2000;             // 周期
+    // int16_t DSD = 500;            // 每点间隔
+    // uint8_t flag1 = 0, flag2 = 0; // 两组腿位置标志位
+    // int16_t t = 0;
+    // float x1 = Front_left_position[2][0], y1 = Front_left_position[2][1], z1 = Front_left_position[2][2];
+    // float x2 = Mid_left_position[2][0], y2 = Mid_left_position[2][1], z2 = Mid_left_position[2][2];
+    // float x3 = Back_left_position[2][0], y3 = Back_left_position[2][1], z3 = Back_left_position[2][2];
+    // float x4 = Front_right_position[2][0], y4 = Front_right_position[2][1], z4 = Front_right_position[2][2];
+    // float x5 = Mid_right_position[2][0], y5 = Mid_right_position[2][1], z5 = Mid_right_position[2][2];
+    // float x6 = Back_right_position[2][0], y6 = Back_right_position[2][1], z6 = Back_right_position[2][2];
+    // while (t <= T)
+    // {
+    //     if (t <= T / 2)
+    //     {
+    //         // 机械腿组1摆动相
+    //         x1 = Front_left_position[flag1][0];
+    //         y1 = Front_left_position[flag1][1];
+    //         z1 = Front_left_position[flag1][2];
+
+    //         x3 = Back_left_position[flag1][0];
+    //         y3 = Back_left_position[flag1][1];
+    //         z3 = Back_left_position[flag1][2];
+
+    //         x5 = Mid_right_position[flag1][0];
+    //         y5 = Mid_right_position[flag1][1];
+    //         z5 = Mid_right_position[flag1][2];
+    //         if (flag1 == 2)
+    //         {
+    //             x2 = Mid_left_position[2][0];
+    //             y2 = Mid_left_position[2][1];
+    //             z2 = Mid_left_position[2][2];
+
+    //             x4 = Front_right_position[2][0];
+    //             y4 = Front_right_position[2][1];
+    //             z4 = Front_right_position[2][2];
+
+    //             x6 = Back_right_position[2][0];
+    //             y6 = Back_right_position[2][1];
+    //             z6 = Back_right_position[2][2];
+    //         }
+
+    //         flag1++;
+    //         flag1 %= 3;
+    //     }
+    //     if (t > T / 2 && t <= T)
+    //     {
+    //         // 机械腿组2摆动相
+    //         x2 = Mid_left_position[flag2][0];
+    //         y2 = Mid_left_position[flag2][1];
+    //         z2 = Mid_left_position[flag2][2];
+
+    //         x4 = Front_right_position[flag2][0];
+    //         y4 = Front_right_position[flag2][1];
+    //         z4 = Front_right_position[flag2][2];
+
+    //         x6 = Back_right_position[flag2][0];
+    //         y6 = Back_right_position[flag2][1];
+    //         z6 = Back_right_position[flag2][2];
+
+    //         if (flag2 == 2)
+    //         {
+    //             x1 = Front_left_position[2][0];
+    //             y1 = Front_left_position[2][1];
+    //             z1 = Front_left_position[2][2];
+
+    //             x3 = Back_left_position[2][0];
+    //             y3 = Back_left_position[2][1];
+    //             z3 = Back_left_position[2][2];
+
+    //             x5 = Mid_right_position[2][0];
+    //             y5 = Mid_right_position[2][1];
+    //             z5 = Mid_right_position[2][2];
+    //         }
+
+    //         flag2++;
+    //         flag2 %= 3;
+    //     }
+
+    //     for (size_t i = 0; i < AddedNumofLeg; i++)
+    //     {
+    //         LegConfig *TargetLeg;
+    //         xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+    //         switch (i)
+    //         {
+    //         case 0:
+    //             TargetLeg->LegMoving(x1, y1, z1);
+    //             break;
+
+    //         case 1:
+    //             TargetLeg->LegMoving(x2, y2, z2);
+    //             break;
+    //         case 2:
+    //             TargetLeg->LegMoving(x3, y3, z3);
+    //             break;
+    //         case 3:
+    //             TargetLeg->LegMoving(x4, y4, z4);
+    //             break;
+    //         case 4:
+    //             TargetLeg->LegMoving(x5, y5, z5);
+    //             break;
+    //         case 5:
+    //             TargetLeg->LegMoving(x6, y6, z6);
+    //             break;
+    //         default:
+    //             break;
+    //         }
+    //     }
+
+    //     delay(DSD);
+    //     t += DSD;
+    // }
 }
 void left_cross_walk_task(void *pvParameters)
 {

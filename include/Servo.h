@@ -42,7 +42,7 @@
 #define defaultServoID3 3
 #define numofLeg 6
 #define defaultLegName "UnNameLeg"
-#define defaultRunTime 200
+#define defaultRunTime 100
 // ..Wanning: These default<xxx> should NOT used in the original code
 /**********************Other**********************/
 /*

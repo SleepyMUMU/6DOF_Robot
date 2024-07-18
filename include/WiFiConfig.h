@@ -14,8 +14,8 @@
 /*********WiFi Config*********/
 #define defaultSSID "DebugPC"   // 默认WiFi名称
 #define defaultPassward "asdasdasd" // 默认WiFi密码
-// #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
-// #define defaultPassward "woaiwuxie1" // 默认WiFi密码
+// #define defaultSSID "lala"   // 默认WiFi名称
+// #define defaultPassward "12345678" // 默认WiFi密码
 // #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称
 // #define defaultPassward "woaiwuxie1" // 默认WiFi密码
 // #define defaultSSID "PLA·Studio🐣"   // 默认WiFi名称

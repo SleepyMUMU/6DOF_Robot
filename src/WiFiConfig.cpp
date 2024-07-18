@@ -11,7 +11,7 @@ bool WiFiConfig::WiFiInit()
     this->ssid = defaultSSID;
     this->passward = defaultPassward;
     // WiFi.config(defaultLocalIP, defaultGateway, defaultSubnetMask, defaultPrimaryDNS, defaultSecondaryDNS); // 设置静态IP
-    WiFi.begin(ssid, passward);                                                                             // 连接WiFi
+    // WiFi.begin(ssid, passward);                                                                             // 连接WiFi
     while (WiFi.status() != WL_CONNECTED)                                                                   // 等待WiFi连接
     {
         DebugSerial.println("[WiFi]Try to connected");
