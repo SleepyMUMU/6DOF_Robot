@@ -18,6 +18,7 @@
 WiFiConfig WLAN;
 TCPConfig MUMU;
 TCPConfig JIAHONG;
+TCPConfig Conisn;
 
 FSUS_Protocol protocol1(&ServoSerial1, ServoSerial1Baud);
 FSUS_Protocol protocol2(&ServoSerial2, ServoSerial2Baud);
@@ -45,7 +46,6 @@ void setup()
   UARTInit(); // 初始化串口
   WiFi.begin(defaultSSID, defaultPassward);
 
-
   if (WLAN.WiFiInit()) // 初始化WiFi
   {
     DebugSerial.println("WiFi Init Success");
@@ -53,49 +53,39 @@ void setup()
 
   WLAN.OTAconfig(); // 初始化OTA
 
-  protocol1.init(&ServoSerial1, ServoSerial1Baud, ServoSerial1Rx, ServoSerial1Tx);
-  protocol2.init(&ServoSerial2, ServoSerial2Baud, ServoSerial2Rx, ServoSerial2Tx);
-
-  // Leg1.LegInit();
-  // Leg2.LegInit();
-  // Leg3.LegInit();
-  // Leg4.LegInit();
-  // Leg5.LegInit();
-  // Leg6.LegInit();
-
-  // robot.InitPos(3, 4, 1, 2000); // 初始化机器人位置
-  //  生成一个消息队列，将对象LegConfig的指针传递给对方消息队列
-  robot.SetPos(defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], 2000);
-
-  MUMU.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
+  robot.SetPos(defaultPosition[4], defaultPosition[4], defaultPosition[4], defaultPosition[4], defaultPosition[4], defaultPosition[4], 2000);
 
   // 生成一个消息队列，将对象MUMU和JIAHONG的指针传递给对方消息队列
-  MUMU.TCPQueue = xQueueCreate(1, sizeof(TCPConfig *));
+  Conisn.TCPQueue = xQueueCreate(1, sizeof(TCPConfig *));
   JIAHONG.TCPQueue = xQueueCreate(1, sizeof(TCPConfig *));
-  // 生成队列传递腿部信息
-  MUMU.LegQueue = xQueueCreate(1, sizeof(LegConfig *));
+  // // 生成队列传递腿部信息
+  // Conisn.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
+  // Conisn.LegQueue = xQueueCreate(numofLeg, sizeof(LegConfig *));
 
   TCPConfig *JIAHONG_Pointer = &JIAHONG;
-  TCPConfig *MUMU_Pointer = &MUMU;
-  xQueueSend(MUMU.TCPQueue, &JIAHONG_Pointer, portMAX_DELAY);
-  xQueueSend(JIAHONG.TCPQueue, &MUMU_Pointer, portMAX_DELAY);
+  TCPConfig *Conisn_Pointer = &Conisn;
+  // TCPConfig *MUMU_Pointer = &MUMU;
+  // xQueueSend(JIAHONG.TCPQueue, &MUMU_Pointer, portMAX_DELAY);
+  xQueueSend(Conisn.TCPQueue, &JIAHONG_Pointer, portMAX_DELAY);
+  xQueueSend(JIAHONG.TCPQueue, &Conisn_Pointer, portMAX_DELAY);
 
   // 初始化TCP服务器配置
-  MUMU.serverIP = MUMUServerIP;
-  MUMU.serverPort = MUMUServerPort;
-  MUMU.serverName = "MUMU";
+  // MUMU.serverIP = MUMUServerIP;
+  // MUMU.serverPort = MUMUServerPort;
+  // MUMU.serverName = "MUMU";
   JIAHONG.serverIP = JIAHONGServerIP;
   JIAHONG.serverPort = JIAHONGServerPort;
   JIAHONG.serverName = "JIAHONG";
+  Conisn.serverIP = ConisnServerIP;
+  Conisn.serverPort = ConisnServerPort;
+  Conisn.serverName = "Conisn";
 
-  xTaskCreate(OTATask, "OTA_Task", 4096, &WLAN, 1, &WLAN.OTA_TaskHandle);                     // OTA任务
-  xTaskCreate(TCPInit_Task, "MUMU_TCP_Init", 4096, &MUMU, 1, &MUMU.Init_TaskHandle);          // TCP初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
-  xTaskCreate(TCPInit_Task, "JIAHONG_TCP_Init", 4096, &JIAHONG, 1, &JIAHONG.Init_TaskHandle); // TCP.初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
-  //  xTaskCreate(SerialRecive_Task, "SerialRecive_Task", 4096, NULL, 1, NULL);                   // 串口接收任务
+    xTaskCreate(OTATask, "OTA_Task", 4096, &WLAN, 1, &WLAN.OTA_TaskHandle); // OTA任务
+    // xTaskCreate(TCPInit_Task, "MUMU_TCP_Init", 4096, &MUMU, 1, &MUMU.Init_TaskHandle);          // TCP初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
+    xTaskCreate(TCPInit_Task, "JIAHONG_TCP_Init", 4096, &JIAHONG, 1, &JIAHONG.Init_TaskHandle); // TCP.初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
+    xTaskCreate(TCPInit_Task, "Conisn_TCP_Init", 4096, &Conisn, 1, &Conisn.Init_TaskHandle);    // TCP.初始化任务,附加唤醒TCP服务器任务、TaskRunTimeEnv任务
+  
 }
-
-void loop()
-{
-
-  //   delay(1000);
-}
+  void loop()
+  {
+  }

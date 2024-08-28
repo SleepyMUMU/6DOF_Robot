@@ -12,7 +12,7 @@
 // #include <TCP.h>
 
 /*********WiFi Config*********/
-#define defaultSSID "DebugPC"   // 默认WiFi名称
+#define defaultSSID "DebugPC"       // 默认WiFi名称
 #define defaultPassward "asdasdasd" // 默认WiFi密码
 // #define defaultSSID "lala"   // 默认WiFi名称
 // #define defaultPassward "12345678" // 默认WiFi密码
@@ -24,26 +24,21 @@
 // #define defaultPassward "yssahttn" // 默认WiFi密码
 /*********Static IP Config*********/
 
-#define defaultLocalIP   \
-    {                    \  
-        192, 168, 137, 9 \
-    } // 默认本地IP
-#define defaultGateway  \
-    {                   \
-        192, 168, 31, 1 \
-    } // 默认网关
+#define defaultLocalIP \
+    {                  \ 
+        192,168, 137, 9} // 默认本地IP
+#define defaultGateway \
+    {                  \
+        192, 168, 31, 1} // 默认网关
 #define defaultSubnetMask \
     {                     \
-        255, 255, 255, 0  \
-    } // 默认子网掩码
+        255, 255, 255, 0} // 默认子网掩码
 #define defaultPrimaryDNS \
     {                     \
-        223, 5, 5, 5      \
-    } // 默认首选DNS
+        223, 5, 5, 5} // 默认首选DNS
 #define defaultSecondaryDNS \
     {                       \
-        114, 114, 114, 114  \
-    } // 默认备用DNS
+        114, 114, 114, 114} // 默认备用DNS
 /*********OTA Config*********/
 #define defaultOTAHostname "ESP32" // 默认OTA主机名
 #define defaultOTAPassword "OTAP"  // 默认OTA密码

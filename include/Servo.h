@@ -7,8 +7,8 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <FreeRTOSConfig.h>
+#include <TCPConfig.h>
 #include <mymath.h>
-#include "TCPConfig.h"
 
 /*********************Num of Servo*********************/
 #define G1H 1
@@ -42,7 +42,7 @@
 #define defaultServoID3 3
 #define numofLeg 6
 #define defaultLegName "UnNameLeg"
-#define defaultRunTime 100
+#define defaultRunTime 10
 // ..Wanning: These default<xxx> should NOT used in the original code
 /**********************Other**********************/
 /*
@@ -55,41 +55,44 @@
 #define L1 84.0f
 #define L2 73.5f
 #define L3 140.8f
-
+#define pi 3.14f
 /*
  *舵机原始角度
  */
-#define defaultLeg1HipAngle 6.4    // 舵机原始角度
-#define defaultLeg1KneeAngle 1.6// 舵机原始角度
-#define defaultLeg1AnkleAngle 28.2  // 舵机原始角度
+#define defaultLeg1HipAngle 42.4    // 舵机原始角度
+#define defaultLeg1KneeAngle -7.2    // 舵机原始角度
+#define defaultLeg1AnkleAngle -8.3 // 舵机原始角度
 
-#define defaultLeg2HipAngle -5.2   // 舵机原始角度
-#define defaultLeg2KneeAngle -6.6  // 舵机原始角度
-#define defaultLeg2AnkleAngle 28.5 // 舵机原始角度
+#define defaultLeg2HipAngle -1.9   // 舵机原始角度
+#define defaultLeg2KneeAngle 7.5 // 舵机原始角度
+#define defaultLeg2AnkleAngle 2.2 // 舵机原始角度
 
-#define defaultLeg3HipAngle 14.4  // 舵机原始角度
-#define defaultLeg3KneeAngle 38.7// 舵机原始角度
-#define defaultLeg3AnkleAngle 46.5 // 舵机原始角度
+#define defaultLeg3HipAngle 6.0   // 舵机原始角度
+#define defaultLeg3KneeAngle -8.5 // 舵机原始角度
+#define defaultLeg3AnkleAngle -0.2 // 舵机原始角度
 
-#define defaultLeg4HipAngle -10.4 // 舵机原始角度
-#define defaultLeg4KneeAngle 82.0// 舵机原始角度
-#define defaultLeg4AnkleAngle -55.1 // 舵机原始角度
+#define defaultLeg4HipAngle 1.7   // 舵机原始角度
+#define defaultLeg4KneeAngle 1.8   // 舵机原始角度
+#define defaultLeg4AnkleAngle 11.0 // 舵机原始角度
 
-#define defaultLeg5HipAngle 4.9   // 舵机原始角度
-#define defaultLeg5KneeAngle -0.1 // 舵机原始角度
-#define defaultLeg5AnkleAngle 12.1 // 舵机原始角度
+#define defaultLeg5HipAngle -11.2   // 舵机原始角度
+#define defaultLeg5KneeAngle -7.5   // 舵机原始角度
+#define defaultLeg5AnkleAngle -0.1 // 舵机原始角度
 
-#define defaultLeg6HipAngle 3.9 // 舵机原始角度
-#define defaultLeg6KneeAngle 5.0 // 舵机原始角度
-#define defaultLeg6AnkleAngle -11.5 // 舵机原始角度
+#define defaultLeg6HipAngle 5.6  // 舵机原始角度
+#define defaultLeg6KneeAngle -13.1 // 舵机原始角度
+#define defaultLeg6AnkleAngle -2.5 // 舵机原始角度
 
 #define defaultAngle 0
-#define servoDefaultTime 500
+// #define servoDefaultTime 200
 
 #define defaultPower 500
 
+extern float vector_Stand[6][3];
+
 extern FSUS_SERVO_ANGLE_T defaultAngleArray[7][3];
 
+extern uint16_t servoDefaultTime;
 class LegConfig
 {
 private:
@@ -109,7 +112,7 @@ public:
     LegConfig();
     // 构造函数
     LegConfig(FSUS_Protocol INputPol, u8_t LegSer);
-    
+
     ~LegConfig(); // 暂不考虑释放机械臂对象的情况，析构函数留空
     u8_t legSer = 0;
     uint8_t hipServoID;   // hip髋关节舵机ID1
@@ -159,4 +162,5 @@ void left_walk_task(void *pvParameters);
 void right_walk_task(void *pvParameters);
 void left_cross_walk_task(void *pvParameters);
 void right_cross_walk_task(void *pvParameters);
+void up_stairs_walk_task(void *pvParameters);
 #endif
