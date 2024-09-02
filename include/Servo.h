@@ -84,7 +84,7 @@
 #define defaultLeg6AnkleAngle -2.5 // 舵机原始角度
 
 #define defaultAngle 0
-// #define servoDefaultTime 200
+#define servoDefaultTime 100
 
 #define defaultPower 500
 
@@ -92,7 +92,7 @@ extern float vector_Stand[6][3];
 
 extern FSUS_SERVO_ANGLE_T defaultAngleArray[7][3];
 
-extern uint16_t servoDefaultTime;
+// extern uint16_t servoDefaultTime;
 class LegConfig
 {
 private:
@@ -149,7 +149,7 @@ public:
 };
 extern u8_t AddedNumofLeg;
 extern QueueHandle_t LegQueue[numofLeg];
-
+void w_straight();
 void LegPowerDown_Task(void *pvParameters);
 void LegCrtl_Task(void *pvParameters);
 void LegSetAngle_task(void *pvParameters);
@@ -163,4 +163,5 @@ void right_walk_task(void *pvParameters);
 void left_cross_walk_task(void *pvParameters);
 void right_cross_walk_task(void *pvParameters);
 void up_stairs_walk_task(void *pvParameters);
+void w_straight_walk_task(void *pvParameters);
 #endif

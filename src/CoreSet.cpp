@@ -14,6 +14,7 @@ TaskHandle_t changepos_taskHandle;   // 改变姿态任务句柄
 TaskHandle_t up_stairs_taskHandle;
 TaskHandle_t Stand_taskHandle;
 TaskHandle_t Car_taskHandle;
+TaskHandle_t w_straight_taskHandle;
 void coreSetEnable()
 {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // 禁用低压检测
@@ -115,6 +116,22 @@ void tcpRunTimeEnvTask(void *pvParam)
                     xTaskCreate(straight_walk_task, "StraightTest", 4096, Target, 1, &straight_taskHandle);
                     // TaskHindBind(&straight_taskHandle, Target);        // 任务绑定
                     Target->Terminal_TaskHandle = straight_taskHandle; // 任务句柄绑定
+                    Target->truncateStream = false;                    // 截断流
+                    // Target->truncateStream = true;
+                }
+                else if (Target->ReceiveData == "ww")
+                {
+                    if (Target->Terminal_TaskHandle != NULL)
+                    {
+                        Target->TCP.printf("[E][RunTime]Task %s is Running.\n", pcTaskGetTaskName(Target->Terminal_TaskHandle));
+                        vTaskDelete(Target->Terminal_TaskHandle);
+                    }
+
+                    Target->TCP.println("[I][RunTime]Straight Test.");
+                    TaskHandle_t taskHandle = NULL;
+                    xTaskCreate(w_straight_walk_task, "StraightTest", 4096, Target, 1, &w_straight_taskHandle);
+                    // TaskHindBind(&straight_taskHandle, Target);        // 任务绑定
+                    Target->Terminal_TaskHandle = w_straight_taskHandle; // 任务句柄绑定
                     Target->truncateStream = false;                    // 截断流
                     // Target->truncateStream = true;
                 }

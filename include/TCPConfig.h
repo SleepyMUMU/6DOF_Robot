@@ -17,7 +17,7 @@
         10, 3, 45, 69} // MUMU服务器IP
 #define JIAHONGServerIP \
     {                   \
-        192, 168, 31, 32} // JIAHONG服务器IP
+        192, 168, 108, 248} // JIAHONG服务器IP
 // #define ConisnServerIP \
 //     {                   \
 //         192,168,137,18} // JIAHONG服务器IP

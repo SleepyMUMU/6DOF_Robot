@@ -277,6 +277,7 @@ void RobotPoscar_Task(void *pvParameters)
     // p2 = Position(68.12, 0, -160.9);
     // p3(-20.01, 0, -63.66);
     car();
+    Target->ReceiveData == "";
     vTaskDelete(NULL);
 }
 void RobotPosStand_Task(void *pvParameters)
@@ -284,6 +285,7 @@ void RobotPosStand_Task(void *pvParameters)
     TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
     Target->TCP.println("[RobotPosDown]set all leg to the position of the robot.");
     stand();
+    Target->ReceiveData == "";
 }
 void RobotChangePos_Task(void *pvParameters)
 {
