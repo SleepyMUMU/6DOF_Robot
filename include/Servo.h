@@ -9,7 +9,7 @@
 #include <FreeRTOSConfig.h>
 #include <TCPConfig.h>
 #include <mymath.h>
-
+#include <BLE_Init.h>
 /*********************Num of Servo*********************/
 #define G1H 1
 #define G1K 2
@@ -59,29 +59,30 @@
 /*
  *舵机原始角度
  */
-#define defaultLeg1HipAngle 42.4    // 舵机原始角度
-#define defaultLeg1KneeAngle -7.2    // 舵机原始角度
-#define defaultLeg1AnkleAngle -8.3 // 舵机原始角度
+#define defaultLeg1HipAngle 42.4  // 舵机原始角度
+#define defaultLeg1KneeAngle -7.2 // 舵机原始角度
+#define defaultLeg1AnkleAngle 6.7 // 舵机原始角度
 
-#define defaultLeg2HipAngle -1.9   // 舵机原始角度
-#define defaultLeg2KneeAngle 7.5 // 舵机原始角度
+#define defaultLeg2HipAngle -1.9  // 舵机原始角度
+#define defaultLeg2KneeAngle 7.5  // 舵机原始角度
 #define defaultLeg2AnkleAngle 2.2 // 舵机原始角度
 
-#define defaultLeg3HipAngle 6.0   // 舵机原始角度
-#define defaultLeg3KneeAngle -8.5 // 舵机原始角度
-#define defaultLeg3AnkleAngle -0.2 // 舵机原始角度
+#define defaultLeg3HipAngle 7.8     // 舵机原始角度
+#define defaultLeg3KneeAngle -8.5   // 舵机原始角度
+#define defaultLeg3AnkleAngle -12.7 // 舵机原始角度
 
-#define defaultLeg4HipAngle 1.7   // 舵机原始角度
-#define defaultLeg4KneeAngle 1.8   // 舵机原始角度
-#define defaultLeg4AnkleAngle 11.0 // 舵机原始角度
+#define defaultLeg4HipAngle 1.7     // 舵机原始角度
+#define defaultLeg4KneeAngle 1.8    // 舵机原始角度
+#define defaultLeg4AnkleAngle -14.0 // 舵机原始角度
 
-#define defaultLeg5HipAngle -11.2   // 舵机原始角度
-#define defaultLeg5KneeAngle -7.5   // 舵机原始角度
+#define defaultLeg5HipAngle -11.2  // 舵机原始角度
+#define defaultLeg5KneeAngle -7.5  // 舵机原始角度
 #define defaultLeg5AnkleAngle -0.1 // 舵机原始角度
 
-#define defaultLeg6HipAngle 5.6  // 舵机原始角度
+#define defaultLeg6HipAngle 5.6    // 舵机原始角度
 #define defaultLeg6KneeAngle -13.1 // 舵机原始角度
-#define defaultLeg6AnkleAngle -2.5 // 舵机原始角度
+// #define defaultLeg6AnkleAngle -2.5 // 舵机原始角度
+#define defaultLeg6AnkleAngle -52.5 // 舵机原始角度
 
 #define defaultAngle 0
 #define servoDefaultTime 100
@@ -91,6 +92,7 @@
 extern float vector_Stand[6][3];
 
 extern FSUS_SERVO_ANGLE_T defaultAngleArray[7][3];
+extern bool ControlExit_Flag;
 
 // extern uint16_t servoDefaultTime;
 class LegConfig
@@ -150,6 +152,10 @@ public:
 extern u8_t AddedNumofLeg;
 extern QueueHandle_t LegQueue[numofLeg];
 void w_straight();
+void up_slope();
+void car();
+void stand();
+void UpSlope_task(void *pvParameters);
 void LegPowerDown_Task(void *pvParameters);
 void LegCrtl_Task(void *pvParameters);
 void LegSetAngle_task(void *pvParameters);
@@ -162,6 +168,9 @@ void left_walk_task(void *pvParameters);
 void right_walk_task(void *pvParameters);
 void left_cross_walk_task(void *pvParameters);
 void right_cross_walk_task(void *pvParameters);
-void up_stairs_walk_task(void *pvParameters);
+// void up_stairs_walk_task(void *pvParameters);
+void Stand_Task(void *pvParameters);
+void car_Task(void *pvParameters);
+void car2_Task(void *pvParameters);
 void w_straight_walk_task(void *pvParameters);
 #endif

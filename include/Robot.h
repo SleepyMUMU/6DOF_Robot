@@ -40,10 +40,10 @@ public:
     u8_t defaultPos1;
     u8_t defaultPos2;
 };
-void car();
-void stand();
+// void car();
+// void stand();
 void RobotPos_Task(void *pvParameters);
-void RobotPoscar_Task(void *pvParameters);
+// void RobotPoscar_Task(void *pvParameters);
 void RobotChangePos_Task(void *pvParameters);
-void RobotPosStand_Task(void *pvParameters);
+// void RobotPosStand_Task(void *pvParameters);
 #endif // _ROBOT_H_

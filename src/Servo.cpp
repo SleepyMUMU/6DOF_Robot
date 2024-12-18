@@ -1,4 +1,7 @@
 #include "Servo.h"
+#include "main.h"
+
+bool ControlExit_Flag = false;
 // uint16_t servoDefaultTime = 200;
 FSUS_SERVO_ANGLE_T defaultAngleArray[7][3] = {
     {0, 0, 0},
@@ -637,43 +640,36 @@ void LegPing_Task(void *pvParameters)
 //     }
 // }
 
-void up_stairs()
+void up_slope()
 {
 
-    int16_t DSD = 1000; // 每点间隔
-    float T = 2;        // 周期
-    float Length = 80;  // 步长
-    float H = 150;      // 步高
-    float step = 4;     // 插值次数
-    float t = 0;        // 时间标志位
-    int flag = 0;       // 插值标志位
+    int16_t DSD = 120;      // 每点间隔
+    float T = 2;            // 周期
+    float Length = 80;      // 步长
+    float H = Length - 0.1; // 步高
+    float step = 10;        // 插值次数
+    float t = 0;            // 时间标志位
+    int flag = 0;           // 插值标志位
 
-    float Position_Swing[3];                                            // 摆动相位置暂存
-    float Position_Support[3];                                          // 支撑相位置暂存
-    Vector3 p1 = {vector_Stand[0][0], -Length / 2, vector_Stand[0][2]}; // 相对当前位置向量圆弧起始点
-    Vector3 p2 = {vector_Stand[0][0], 0, vector_Stand[0][2] + H / 4};   // 相对当前位置向量圆弧中间点
-    Vector3 p3 = {vector_Stand[0][0], Length, vector_Stand[0][2] + H};  // 相对当前位置向量圆弧终点
+    float Position_Swing[3];                                        // 摆动相位置暂存
+    float Position_Support[3];                                      // 支撑相位置暂存
+    Vector3 p1 = {vector_Stand[0][0], Length, vector_Stand[0][2]};  // 相对当前位置向量圆弧起始点
+    Vector3 p2 = {vector_Stand[0][0], 0, vector_Stand[0][2] + H};   // 相对当前位置向量圆弧中间点
+    Vector3 p3 = {vector_Stand[0][0], -Length, vector_Stand[0][2]}; // 相对当前位置向量圆弧终点
 
-    Vector3 center;       // 圆弧圆心暂存
-    Vector3 position;     // 位置暂存
-    Vector3 swing;        // 位置暂存
-    float Swinging[5][3]; // 摆动相位置
-    float Support[5][3];  // 摆动相位置
+    Vector3 center;        // 圆弧圆心暂存
+    Vector3 position;      // 位置暂存
+    float Swinging[10][3]; // 摆动相位置
     center = calculateArcCenter(p1, p2, p3);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 10; i++)
     {
-        position = Forward_calculateTrack(p1, p3, center, step, i);
-        swing = Invers_calculateTrack(p1, p3, center, step, i);
+        position = Invers_calculateTrack(p1, p3, center, step, i);
 
         for (int j = 0; j < 3; j++)
         {
             Swinging[i][0] = float(position.x);
             Swinging[i][1] = float(position.y);
             Swinging[i][2] = float(position.z);
-
-            Support[i][0] = float(swing.x);
-            Support[i][1] = float(swing.y);
-            Support[i][2] = float(swing.z);
         }
     }
 
@@ -686,25 +682,163 @@ void up_stairs()
             Position_Swing[0] = Swinging[flag][0];
             Position_Swing[1] = Swinging[flag][1];
             Position_Swing[2] = Swinging[flag][2];
+
             // 右1，右3，左2支撑 y方向运动-Length~0.8*Length
-            Position_Support[0] = Support[flag][0];
-            Position_Support[1] = Support[flag][1];
-            Position_Support[2] = Support[flag][2];
+            Position_Support[0] = vector_Stand[0][0];
+            Position_Support[1] = -2 * Length * t + Length;
+            Position_Support[2] = vector_Stand[0][2];
         }
-        else if (t < T && t > T / 2)
+        else if (t < T && t >= T / 2)
         {
 
-            if (flag > step)
+            if (flag >= step)
             {
                 flag = 0;
             }
             Position_Support[0] = Swinging[flag][0];
             Position_Support[1] = Swinging[flag][1];
             Position_Support[2] = Swinging[flag][2];
+            // Serial.println(Position_Swing[0]);
+            // Serial.println("");
+            // Serial.println(Position_Swing[1]);
+            // Serial.println("");
+            // Serial.println(Position_Swing[2]);
+            // Serial.println("");
 
-            Position_Swing[0] = Support[flag][0];
-            Position_Swing[1] = Support[flag][1];
-            Position_Swing[2] = Support[flag][2];
+            Position_Swing[0] = vector_Stand[0][0];
+            Position_Swing[1] = -2 * Length * (t - T / 2) + Length;
+            Position_Swing[2] = vector_Stand[0][2];
+            // Serial.println(Position_Support[0]);
+            // Serial.println("");
+            // Serial.println(Position_Support[1]);
+            // Serial.println("");
+            // Serial.println(Position_Support[2]);
+            // Serial.println("");
+        }
+        else
+        {
+            t += 0.2;
+            continue;
+
+        }; // do nothing
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            switch (i)
+            {
+            case 0:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2] + 44);
+                break;
+
+            case 1:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2] + 22);
+                break;
+            case 2:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                break;
+            case 3:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2] + 44);
+                break;
+
+            case 4:
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2] + 22);
+                break;
+            case 5:
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                break;
+            default:
+                break;
+            }
+        }
+
+        delay(DSD);
+        t += 0.2;
+        flag += 2;
+    }
+}
+void UpSlope_task(void *pvParameters)
+{
+    while (1)
+    {
+        up_slope();
+        vTaskDelay(1);
+    }
+}
+/*爬坡适应步态*/
+void w_straight()
+{
+    int16_t DSD = 120;      // 每点间隔
+    float T = 2;            // 周期
+    float Length = 80;      // 步长
+    float H = Length - 0.1; // 步高
+    float step = 10;        // 插值次数
+    float t = 0;            // 时间标志位
+    int flag = 0;           // 插值标志位
+
+    float Position_Swing[3];                                        // 摆动相位置暂存
+    float Position_Support[3];                                      // 支撑相位置暂存
+    Vector3 p1 = {vector_Stand[0][0], Length, vector_Stand[0][2]};  // 相对当前位置向量圆弧起始点
+    Vector3 p2 = {vector_Stand[0][0], 0, vector_Stand[0][2] + H};   // 相对当前位置向量圆弧中间点
+    Vector3 p3 = {vector_Stand[0][0], -Length, vector_Stand[0][2]}; // 相对当前位置向量圆弧终点
+
+    Vector3 center;        // 圆弧圆心暂存
+    Vector3 position;      // 位置暂存
+    float Swinging[10][3]; // 摆动相位置
+    center = calculateArcCenter(p1, p2, p3);
+    for (int i = 0; i < 10; i++)
+    {
+        position = Invers_calculateTrack(p1, p3, center, step, i);
+
+        for (int j = 0; j < 3; j++)
+        {
+            Swinging[i][0] = float(position.x);
+            Swinging[i][1] = float(position.y);
+            Swinging[i][2] = float(position.z);
+        }
+    }
+
+    while (t < T)
+    {
+
+        if (t < T / 2)
+        {
+            // 左1，左3，右2摆动 y方向运动Length~-Length z方向运动0~H
+            Position_Swing[0] = Swinging[flag][0];
+            Position_Swing[1] = Swinging[flag][1];
+            Position_Swing[2] = Swinging[flag][2];
+
+            // 右1，右3，左2支撑 y方向运动-Length~0.8*Length
+            Position_Support[0] = vector_Stand[0][0];
+            Position_Support[1] = -2 * Length * t + Length;
+            Position_Support[2] = vector_Stand[0][2];
+        }
+        else if (t < T && t >= T / 2)
+        {
+
+            if (flag >= step)
+            {
+                flag = 0;
+            }
+            Position_Support[0] = Swinging[flag][0];
+            Position_Support[1] = Swinging[flag][1];
+            Position_Support[2] = Swinging[flag][2];
+            // Serial.println(Position_Swing[0]);
+            // Serial.println("");
+            // Serial.println(Position_Swing[1]);
+            // Serial.println("");
+            // Serial.println(Position_Swing[2]);
+            // Serial.println("");
+
+            Position_Swing[0] = vector_Stand[0][0];
+            Position_Swing[1] = -2 * Length * (t - T / 2) + Length;
+            Position_Swing[2] = vector_Stand[0][2];
+            // Serial.println(Position_Support[0]);
+            // Serial.println("");
+            // Serial.println(Position_Support[1]);
+            // Serial.println("");
+            // Serial.println(Position_Support[2]);
+            // Serial.println("");
         }
         else
         {
@@ -726,7 +860,7 @@ void up_stairs()
                 TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
                 break;
             case 2:
-                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2] - 30);
                 break;
             case 3:
                 TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
@@ -736,7 +870,7 @@ void up_stairs()
                 TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
                 break;
             case 5:
-                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2] - 30);
                 break;
             default:
                 break;
@@ -745,134 +879,9 @@ void up_stairs()
 
         delay(DSD);
         t += 0.2;
-        flag++;
+        flag += 2;
     }
 }
-void up_stairs_walk_task(void *pvParameters)
-{
-    while (1)
-    {
-        up_stairs();
-        vTaskDelay(1);
-    }
-}
-/*爬坡适应步态*/
-// void w_straight()
-// {
-//     int16_t DSD = 120;      // 每点间隔
-//     float T = 2;            // 周期
-//     float Length = 80;      // 步长
-//     float H = Length - 0.1; // 步高
-//     float step = 10;        // 插值次数
-//     float t = 0;            // 时间标志位
-//     int flag = 0;           // 插值标志位
-
-//     float Position_Swing[3];                                        // 摆动相位置暂存
-//     float Position_Support[3];                                      // 支撑相位置暂存
-//     Vector3 p1 = {vector_Stand[0][0], Length, vector_Stand[0][2]};  // 相对当前位置向量圆弧起始点
-//     Vector3 p2 = {vector_Stand[0][0], 0, vector_Stand[0][2] + H};   // 相对当前位置向量圆弧中间点
-//     Vector3 p3 = {vector_Stand[0][0], -Length, vector_Stand[0][2]}; // 相对当前位置向量圆弧终点
-
-//     Vector3 center;        // 圆弧圆心暂存
-//     Vector3 position;      // 位置暂存
-//     float Swinging[10][3]; // 摆动相位置
-//     center = calculateArcCenter(p1, p2, p3);
-//     for (int i = 0; i < 10; i++)
-//     {
-//         position = Invers_calculateTrack(p1, p3, center, step, i);
-
-//         for (int j = 0; j < 3; j++)
-//         {
-//             Swinging[i][0] = float(position.x);
-//             Swinging[i][1] = float(position.y);
-//             Swinging[i][2] = float(position.z);
-//         }
-//     }
-
-//     while (t < T)
-//     {
-
-//         if (t < T / 2)
-//         {
-//             // 左1，左3，右2摆动 y方向运动Length~-Length z方向运动0~H
-//             Position_Swing[0] = Swinging[flag][0];
-//             Position_Swing[1] = Swinging[flag][1];
-//             Position_Swing[2] = Swinging[flag][2];
-
-//             // 右1，右3，左2支撑 y方向运动-Length~0.8*Length
-//             Position_Support[0] = vector_Stand[0][0];
-//             Position_Support[1] = -2 * Length * t + Length;
-//             Position_Support[2] = vector_Stand[0][2];
-//         }
-//         else if (t < T && t >= T / 2)
-//         {
-
-//             if (flag >= step)
-//             {
-//                 flag = 0;
-//             }
-//             Position_Support[0] = Swinging[flag][0];
-//             Position_Support[1] = Swinging[flag][1];
-//             Position_Support[2] = Swinging[flag][2];
-//             // Serial.println(Position_Swing[0]);
-//             // Serial.println("");
-//             // Serial.println(Position_Swing[1]);
-//             // Serial.println("");
-//             // Serial.println(Position_Swing[2]);
-//             // Serial.println("");
-
-//             Position_Swing[0] = vector_Stand[0][0];
-//             Position_Swing[1] = -2 * Length * (t - T / 2) + Length;
-//             Position_Swing[2] = vector_Stand[0][2];
-//             // Serial.println(Position_Support[0]);
-//             // Serial.println("");
-//             // Serial.println(Position_Support[1]);
-//             // Serial.println("");
-//             // Serial.println(Position_Support[2]);
-//             // Serial.println("");
-//         }
-//         else
-//         {
-//             t += 0.2;
-//             continue;
-
-//         }; // do nothing
-//         for (size_t i = 0; i < AddedNumofLeg; i++)
-//         {
-//             LegConfig *TargetLeg;
-//             xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-//             switch (i)
-//             {
-//             case 0:
-//                 TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]+25);
-//                 break;
-
-//             case 1:
-//                 TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]-15);
-//                 break;
-//             case 2:
-//                 TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]-20);
-//                 break;
-//             case 3:
-//                 TargetLeg->LegMoving(Position_Support[0] , Position_Support[1], Position_Support[2]+25);
-//                 break;
-
-//             case 4:
-//                 TargetLeg->LegMoving(Position_Swing[0] , Position_Swing[1], Position_Swing[2]-15);
-//                 break;
-//             case 5:
-//                 TargetLeg->LegMoving(Position_Support[0] , Position_Support[1], Position_Support[2]-20);
-//                 break;
-//             default:
-//                 break;
-//             }
-//         }
-
-//         delay(DSD);
-//         t += 0.2;
-//         flag += 2;
-//     }
-// }
 /*侧向爬坡*/
 // void w_straight()
 // {
@@ -990,126 +999,116 @@ void up_stairs_walk_task(void *pvParameters)
 //     }
 // }
 /*下台阶*/
-void w_straight()
-{
-    int16_t DSD = 120;      // 每点间隔
-    float T = 2;            // 周期
-    float Length = 80;      // 步长
-    float H = Length - 0.1; // 步高
-    float step = 10;        // 插值次数
-    float t = 0;            // 时间标志位
-    int flag = 0;           // 插值标志位
+// void w_straight()
+// {
+//     int16_t DSD = 300;      // 每点间隔
+//     float T = 2;            // 周期
+//     float Length = 80;      // 步长
+//     float H = Length - 0.1; //
+//     float step = 10;        // 插值次数
+//     float t = 0;            // 时间标志位
+//     int flag = 0;           // 插值标志位
 
-    float Position_Swing[3];                                        // 摆动相位置暂存
-    float Position_Support[3];                                      // 支撑相位置暂存
-    Vector3 p1 = {vector_Stand[0][0], Length, vector_Stand[0][2]};  // 相对当前位置向量圆弧起始点
-    Vector3 p2 = {vector_Stand[0][0], 0, vector_Stand[0][2] + H};   // 相对当前位置向量圆弧中间点
-    Vector3 p3 = {vector_Stand[0][0], -Length, vector_Stand[0][2]}; // 相对当前位置向量圆弧终点
+//     float Position_Swing[3];   // 摆动相位置暂存
+//     float Position_Support[3]; // 支撑相位置暂存
+//     float forward_Position[3];
+//     float back_Position[3];
+//     Vector3 p1 = {vector_Stand[0][0], Length, vector_Stand[0][2]};  // 相对当前位置向量圆弧起始点
+//     Vector3 p2 = {vector_Stand[0][0], 0, vector_Stand[0][2] + H};   // 相对当前位置向量圆弧中间点
+//     Vector3 p3 = {vector_Stand[0][0], -Length, vector_Stand[0][2]}; // 相对当前位置向量圆弧终点
 
-    Vector3 center;        // 圆弧圆心暂存
-    Vector3 position;      // 位置暂存
-    float Swinging[10][3]; // 摆动相位置
-    center = calculateArcCenter(p1, p2, p3);
-    for (int i = 0; i < 10; i++)
-    {
-        position = Invers_calculateTrack(p1, p3, center, step, i);
+//     Vector3 center;        // 圆弧圆心暂存
+//     Vector3 position;      // 位置暂存
+//     float Swinging[10][3]; // 摆动相位置
+//     center = calculateArcCenter(p1, p2, p3);
+//     for (int i = 0; i < 10; i++)
+//     {
+//         position = Invers_calculateTrack(p1, p3, center, step, i);
 
-        for (int j = 0; j < 3; j++)
-        {
-            Swinging[i][0] = float(position.x);
-            Swinging[i][1] = float(position.y);
-            Swinging[i][2] = float(position.z);
-        }
-    }
+//         for (int j = 0; j < 3; j++)
+//         {
+//             Swinging[i][0] = float(position.x);
+//             Swinging[i][1] = float(position.y);
+//             Swinging[i][2] = float(position.z);
+//         }
+//     }
 
-    while (t < T)
-    {
+//     while (t < T)
+//     {
 
-        if (t < T / 2)
-        {
-            // 左1，左3，右2摆动 y方向运动Length~-Length z方向运动0~H
-            Position_Swing[0] = Swinging[flag][0];
-            Position_Swing[1] = Swinging[flag][1];
-            Position_Swing[2] = Swinging[flag][2];
+//         if (t < T / 2)
+//         {
+//             // 左1，左3，右2摆动 y方向运动Length~-Length z方向运动0~H
+//             Position_Swing[0] = Swinging[flag][0];
+//             Position_Swing[1] = Swinging[flag][1];
+//             Position_Swing[2] = Swinging[flag][2];
 
-            // 右1，右3，左2支撑 y方向运动-Length~0.8*Length
-            Position_Support[0] = vector_Stand[0][0];
-            Position_Support[1] = -2 * Length * t + Length;
-            Position_Support[2] = vector_Stand[0][2];
-        }
-        else if (t < T && t >= T / 2)
-        {
+//             // 右1，右3，左2支撑 y方向运动-Length~0.8*Length
+//             Position_Support[0] = vector_Stand[0][0];
+//             Position_Support[1] = -2 * Length * t + Length;
+//             Position_Support[2] = vector_Stand[0][2];
+//         }
+//         else if (t < T && t >= T / 2)
+//         {
 
-            if (flag >= step)
-            {
-                flag = 0;
-            }
-            Position_Support[0] = Swinging[flag][0];
-            Position_Support[1] = Swinging[flag][1];
-            Position_Support[2] = Swinging[flag][2];
-            // Serial.println(Position_Swing[0]);
-            // Serial.println("");
-            // Serial.println(Position_Swing[1]);
-            // Serial.println("");
-            // Serial.println(Position_Swing[2]);
-            // Serial.println("");
+//             if (flag >= step)
+//             {
+//                 flag = 0;
+//             }
+//             Position_Support[0] = Swinging[flag][0];
+//             Position_Support[1] = Swinging[flag][1];
+//             Position_Support[2] = Swinging[flag][2];
 
-            Position_Swing[0] = vector_Stand[0][0];
-            Position_Swing[1] = -2 * Length * (t - T / 2) + Length;
-            Position_Swing[2] = vector_Stand[0][2];
-            // Serial.println(Position_Support[0]);
-            // Serial.println("");
-            // Serial.println(Position_Support[1]);
-            // Serial.println("");
-            // Serial.println(Position_Support[2]);
-            // Serial.println("");
-        }
-        else
-        {
-            t += 0.2;
-            continue;
+//             Position_Swing[0] = vector_Stand[0][0];
+//             Position_Swing[1] = -2 * Length * (t - T / 2) + Length;
+//             Position_Swing[2] = vector_Stand[0][2];
+//         }
+//         else
+//         {
+//             t += 0.2;
+//             continue;
 
-        }; // do nothing
-        for (size_t i = 0; i < AddedNumofLeg; i++)
-        {
-            LegConfig *TargetLeg;
-            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-            switch (i)
-            {
-            case 0:
-                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]-35);
-                break;
+//         }; // do nothing
+//         for (size_t i = 0; i < AddedNumofLeg; i++)
+//         {
+//             LegConfig *TargetLeg;
+//             xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+//             switch (i)
+//             {
+//             case 0:
+//                 TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2] - 45);
+//                 break;
 
-            case 1:
-                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]-25);
-                break;
-            case 2:
-                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]+25);
-                break;
-            case 3:
-                TargetLeg->LegMoving(Position_Support[0] , Position_Support[1], Position_Support[2]-35);
-                break;
+//             case 1:
+//                 TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2] + 35);
+//                 break;
+//             case 2:
+//                 TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2] + 40);
+//                 break;
+//             case 3:
+//                 TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2] - 45);
+//                 break;
 
-            case 4:
-                TargetLeg->LegMoving(Position_Swing[0] , Position_Swing[1], Position_Swing[2]-25);
-                break;
-            case 5:
-                TargetLeg->LegMoving(Position_Support[0] , Position_Support[1], Position_Support[2]+25);
-                break;
-            default:
-                break;
-            }
-        }
-        delay(DSD);
-        t += 0.2;
-        flag += 2;
-    }
-}
+//             case 4:
+//                 TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2] + 35);
+//                 break;
+//             case 5:
+//                 TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2] + 40);
+//                 break;
+//             default:
+//                 break;
+//             }
+//         }
+//         delay(DSD);
+//         t += 0.2;
+//         flag += 2;
+//     }
+// }
 void straight()
 {
     int16_t DSD = 120;      // 每点间隔
     float T = 2;            // 周期
-    float Length = 80;      // 步长
+    float Length = 50;      // 步长
     float H = Length - 0.1; // 步高
     float step = 10;        // 插值次数
     float t = 0;            // 时间标志位
@@ -1192,24 +1191,24 @@ void straight()
             switch (i)
             {
             case 0:
-                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                TargetLeg->LegMoving(Position_Swing[0] * cos(3.14 / 4) + 30, Position_Swing[1], Position_Swing[2] + 20);
                 break;
 
             case 1:
-                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2] + 20);
                 break;
             case 2:
-                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                TargetLeg->LegMoving(Position_Swing[0] * cos(3.14 / 4) + 30, Position_Swing[1], Position_Swing[2] + 20);
                 break;
             case 3:
-                TargetLeg->LegMoving(Position_Support[0] , Position_Support[1], Position_Support[2]+5);
+                TargetLeg->LegMoving(Position_Support[0] * cos(3.14 / 4) + 30, Position_Support[1], Position_Support[2] + 20);
                 break;
 
             case 4:
-                TargetLeg->LegMoving(Position_Swing[0] , Position_Swing[1], Position_Swing[2]+5);
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2] + 20);
                 break;
             case 5:
-                TargetLeg->LegMoving(Position_Support[0] , Position_Support[1], Position_Support[2]+5);
+                TargetLeg->LegMoving(Position_Support[0] * cos(3.14 / 4) + 30, Position_Support[1], Position_Support[2] + 20);
                 break;
             default:
                 break;
@@ -1220,6 +1219,7 @@ void straight()
         t += 0.2;
         flag += 2;
     }
+    ControlExit_Flag = true;
 }
 
 void back()
@@ -1228,7 +1228,7 @@ void back()
     float T = 2;            // 周期
     float Length = 60;      // 步长
     float H = Length - 0.1; // 步高
-    float step = 10;         // 插值次数
+    float step = 10;        // 插值次数
     float t = 0;            // 时间标志位
     int flag = 0;           // 插值标志位
 
@@ -1238,8 +1238,8 @@ void back()
     Vector3 p2 = {vector_Stand[0][0], 0, vector_Stand[0][2] + H};   // 相对当前位置向量圆弧中间点
     Vector3 p3 = {vector_Stand[0][0], -Length, vector_Stand[0][2]}; // 相对当前位置向量圆弧终点
 
-    Vector3 center;       // 圆弧圆心暂存
-    Vector3 position;     // 位置暂存
+    Vector3 center;        // 圆弧圆心暂存
+    Vector3 position;      // 位置暂存
     float Swinging[10][3]; // 摆动相位置
     center = calculateArcCenter(p1, p2, p3);
     for (int i = 0; i < 10; i++)
@@ -1296,24 +1296,24 @@ void back()
             switch (i)
             {
             case 0:
-                TargetLeg->LegMoving(Position_Swing[0] - 25, Position_Swing[1], Position_Swing[2]);
+                TargetLeg->LegMoving(Position_Support[0] - 25, Position_Support[1], Position_Support[2]);
                 break;
 
             case 1:
-                TargetLeg->LegMoving(Position_Support[0] - 25, Position_Support[1], Position_Support[2]);
-                break;
-            case 2:
                 TargetLeg->LegMoving(Position_Swing[0] - 25, Position_Swing[1], Position_Swing[2]);
                 break;
-            case 3:
+            case 2:
                 TargetLeg->LegMoving(Position_Support[0] - 25, Position_Support[1], Position_Support[2]);
+                break;
+            case 3:
+                TargetLeg->LegMoving(Position_Swing[0] - 25, Position_Swing[1], Position_Swing[2]);
                 break;
 
             case 4:
-                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
+                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
                 break;
             case 5:
-                TargetLeg->LegMoving(Position_Support[0], Position_Support[1], Position_Support[2]);
+                TargetLeg->LegMoving(Position_Swing[0], Position_Swing[1], Position_Swing[2]);
                 break;
             default:
                 break;
@@ -1322,37 +1322,43 @@ void back()
 
         delay(DSD);
         t += 0.2;
-        flag+=2;
+        flag += 2;
     }
+    ControlExit_Flag = true;
 }
 
 void straight_walk_task(void *pvParameters)
 {
-    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
-
-    while (1)
+    // ROSConfig *Target = (ROSConfig *)pvParameters; // 接收对应LegConfig对象
+    // while (1)
+    // {
+    straight();
+    if (ControlExit_Flag)
     {
-        straight();
-        vTaskDelay(1);
+        Serial.println("[ControlExit]Control_Task is Over");
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
     }
+
+    vTaskDelete(NULL);
 }
 void w_straight_walk_task(void *pvParameters)
 {
-    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
-
-    while (1)
-    {
-        w_straight();
-        vTaskDelay(1);
-    }
+    ROSConfig *Target = (ROSConfig *)pvParameters; // 接收对应LegConfig对象
+    w_straight();
+    // vTaskDelete(Target->Ros_TaskHandleHandle);
 }
 void back_walk_task(void *pvParameters)
 {
-    while (1)
+    back();
+    if (ControlExit_Flag)
     {
-        back();
-        vTaskDelay(1);
+        Serial.println("[ControlExit]Control_Task is Over");
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
     }
+
+    vTaskDelete(NULL);
 }
 
 void left()
@@ -1362,7 +1368,7 @@ void left()
     float T = 2;            // 周期
     float Length = 60;      // 步长
     float H = Length - 0.1; // 步高
-    float step = 10;         // 插值次数
+    float step = 10;        // 插值次数
     float t = 0;            // 时间标志位
     int flag = 0;           // 插值标志位
 
@@ -1483,8 +1489,9 @@ void left()
         }
         delay(DSD);
         t += 0.2;
-        flag+=2;
+        flag += 2;
     }
+    ControlExit_Flag = true;
 }
 
 void right()
@@ -1494,7 +1501,7 @@ void right()
     float T = 2;            // 周期
     float Length = 60;      // 步长
     float H = Length - 0.1; // 步高
-    float step = 10;         // 插值次数
+    float step = 10;        // 插值次数
     float t = 0;            // 时间标志位
     int flag = 0;           // 插值标志位
 
@@ -1590,24 +1597,24 @@ void right()
             switch (i)
             {
             case 0:
-                TargetLeg->LegMoving(Left_Swing[0], Left_Swing[1], Left_Swing[2]);
+                TargetLeg->LegMoving(Left_Support[0], Left_Support[1], Left_Support[2]);
                 break;
 
             case 1:
-                TargetLeg->LegMoving(Left_Support[0], Left_Support[1], Left_Support[2]);
-                break;
-            case 2:
                 TargetLeg->LegMoving(Left_Swing[0], Left_Swing[1], Left_Swing[2]);
                 break;
+            case 2:
+                TargetLeg->LegMoving(Left_Support[0], Left_Support[1], Left_Support[2]);
+                break;
             case 3:
-                TargetLeg->LegMoving(Right_Support[0], Right_Support[1], Right_Support[2]);
+                TargetLeg->LegMoving(Left_Swing[0], Left_Swing[1], Left_Swing[2]);
                 break;
 
             case 4:
-                TargetLeg->LegMoving(Right_Swing[0], Right_Swing[1], Right_Swing[2]);
+                TargetLeg->LegMoving(Left_Support[0], Left_Support[1], Left_Support[2]);
                 break;
             case 5:
-                TargetLeg->LegMoving(Right_Support[0], Right_Support[1], Right_Support[2]);
+                TargetLeg->LegMoving(Left_Swing[0], Left_Swing[1], Left_Swing[2]);
                 break;
             default:
                 break;
@@ -1615,25 +1622,33 @@ void right()
         }
         delay(DSD);
         t += 0.2;
-        flag+=2;
+        flag += 2;
     }
+    ControlExit_Flag = true;
 }
 void left_walk_task(void *pvParameters)
 {
-    while (1)
+    left();
+    if (ControlExit_Flag)
     {
-        left();
-        vTaskDelay(1);
+        Serial.println("[ControlExit]Control_Task is Over");
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
     }
+    vTaskDelete(NULL);
 }
 
 void right_walk_task(void *pvParameters)
 {
-    while (1)
+    right();
+    if (ControlExit_Flag)
     {
-        right();
-        vTaskDelay(1);
+        Serial.println("[ControlExit]Control_Task is Over");
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
     }
+
+    vTaskDelete(NULL);
 }
 // work
 void left_cross()
@@ -1642,7 +1657,7 @@ void left_cross()
     float T = 2;            // 周期
     float Length = 60;      // 步长
     float H = Length - 0.1; // 步高
-    float step = 10;         // 插值次数
+    float step = 10;        // 插值次数
     float t = 0;            // 时间标志位
     int flag = 0;           // 插值标志位
 
@@ -1759,17 +1774,21 @@ void left_cross()
         }
         delay(DSD);
         t += 0.2;
-        flag+=2;
+        flag += 2;
     }
+    ControlExit_Flag = true;
 }
 
 void left_cross_walk_task(void *pvParameters)
 {
-    while (1)
+    left_cross();
+    if (ControlExit_Flag)
     {
-        left_cross();
-        vTaskDelay(1);
+        Serial.println("[ControlExit]Control_Task is Over");
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
     }
+    vTaskDelete(NULL);
 }
 
 void right_cross()
@@ -1898,16 +1917,355 @@ void right_cross()
         t += 0.2;
         flag++;
     }
+    ControlExit_Flag = true;
 }
 void right_cross_walk_task(void *pvParameters)
 {
-    while (1)
+    right_cross();
+    if (ControlExit_Flag)
     {
-        right_cross();
-        vTaskDelay(1);
+        Serial.println("[ControlExit]Control_Task is Over");
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
     }
+    vTaskDelete(NULL);
 }
+FSUS_SERVO_ANGLE_T S_angle_group1[4][3] = {{-45, 35, 15},
+                                           {-45, 0, 0},
+                                           {0, 0, 0},
+                                           {0, 0, 0}};
+FSUS_SERVO_ANGLE_T S_angle_group2[4][3] = {{0, -55, -35},
+                                           {0, -55, -35},
+                                           {0, -55, -15},
+                                           {0, 0, 0}};
+FSUS_SERVO_ANGLE_T S_angle_group3[4][3] = {{45, 35, 15},
+                                           {45, 0, 0},
+                                           {0, 0, 0},
+                                           {0, 0, 0}};
+void stand()
+{
+    for (int j = 0; j < 4; j++)
+    {
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            switch (i)
+            {
+            case 0:
+                TargetLeg->LegSetAngle(S_angle_group1[j][0] + defaultLeg1HipAngle, S_angle_group1[j][1] + defaultLeg1KneeAngle, S_angle_group1[j][2] + defaultLeg1AnkleAngle, 1000);
+                break;
+            case 1:
+                TargetLeg->LegSetAngle(S_angle_group2[j][0] + defaultLeg2HipAngle, S_angle_group2[j][1] + defaultLeg2KneeAngle, S_angle_group2[j][2] + defaultLeg2AnkleAngle, 1000);
+                break;
+            case 2:
+                TargetLeg->LegSetAngle(S_angle_group3[j][0] + defaultLeg3HipAngle, S_angle_group3[j][1] + defaultLeg3KneeAngle, S_angle_group3[j][2] + defaultLeg3AnkleAngle, 1000);
+                break;
+            case 3:
+                TargetLeg->LegSetAngle(S_angle_group1[j][0] + defaultLeg4HipAngle, S_angle_group1[j][1] + defaultLeg4KneeAngle, S_angle_group1[j][2] + defaultLeg4AnkleAngle, 1000);
+                break;
 
+            case 4:
+                TargetLeg->LegSetAngle(S_angle_group2[j][0] + defaultLeg5HipAngle, S_angle_group2[j][1] + defaultLeg5KneeAngle, S_angle_group2[j][2] + defaultLeg5AnkleAngle, 1000);
+                break;
+            case 5:
+                TargetLeg->LegSetAngle(S_angle_group3[j][0] + defaultLeg6HipAngle, S_angle_group3[j][1] + defaultLeg6KneeAngle, S_angle_group3[j][2] + defaultLeg6AnkleAngle, 1000);
+                break;
+            default:
+                break;
+            }
+        }
+        vTaskDelay(500);
+    }
+    // for (uint8_t j = 0; j < 2; j++)
+    // {
+    //     if (j == 0)
+    //     {
+    //         for (size_t i = 0; i < AddedNumofLeg; i++)
+    //         {
+    //             LegConfig *TargetLeg;
+    //             xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+    //             switch (i)
+    //             {
+    //             case 0:
+    //                 TargetLeg->LegSetAngle(defaultLeg1HipAngle, -30 + defaultLeg1KneeAngle, -30 + defaultLeg1AnkleAngle, 1500);
+    //                 break;
+    //             case 1:
+    //                 TargetLeg->LegSetAngle(defaultLeg2HipAngle, -30 + defaultLeg2KneeAngle, -30 + defaultLeg2AnkleAngle, 1500);
+    //                 break;
+    //             case 2:
+    //                 TargetLeg->LegSetAngle(defaultLeg3HipAngle, -30 + defaultLeg3KneeAngle, -30 + defaultLeg3AnkleAngle, 1500);
+    //                 break;
+    //             case 3:
+    //                 TargetLeg->LegSetAngle(defaultLeg4HipAngle, -30 + defaultLeg4KneeAngle, -30 + defaultLeg4AnkleAngle, 1500);
+    //                 break;
+
+    //             case 4:
+    //                 TargetLeg->LegSetAngle(defaultLeg5HipAngle, -30 + defaultLeg5KneeAngle, -30 + defaultLeg5AnkleAngle, 1500);
+    //                 break;
+    //             case 5:
+    //                 TargetLeg->LegSetAngle(defaultLeg6HipAngle, -30 + defaultLeg6KneeAngle, -30 + defaultLeg6AnkleAngle, 1500);
+    //                 break;
+    //             default:
+    //                 break;
+    //             }
+    //         }
+    //     }
+    //     else
+    //     {
+    //         for (size_t i = 0; i < AddedNumofLeg; i++)
+    //         {
+    //             LegConfig *TargetLeg;
+    //             xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+    //             switch (i)
+    //             {
+    //             case 0:
+    //                 TargetLeg->LegSetAngle(defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle, 1000);
+    //                 break;
+    //             case 1:
+    //                 TargetLeg->LegSetAngle(defaultLeg2HipAngle, defaultLeg2KneeAngle, defaultLeg2AnkleAngle, 1000);
+    //                 break;
+    //             case 2:
+    //                 TargetLeg->LegSetAngle(defaultLeg3HipAngle, defaultLeg3KneeAngle, defaultLeg3AnkleAngle, 1000);
+    //                 break;
+    //             case 3:
+    //                 TargetLeg->LegSetAngle(defaultLeg4HipAngle, defaultLeg4KneeAngle, defaultLeg4AnkleAngle, 1000);
+    //                 break;
+
+    //             case 4:
+    //                 TargetLeg->LegSetAngle(defaultLeg5HipAngle, defaultLeg5KneeAngle, defaultLeg4AnkleAngle, 1000);
+    //                 break;
+    //             case 5:
+    //                 TargetLeg->LegSetAngle(defaultLeg6HipAngle, defaultLeg6KneeAngle, defaultLeg6AnkleAngle, 1000);
+    //                 break;
+    //             default:
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+    ControlExit_Flag = true;
+}
+void Stand_Task(void *pvParameters)
+{
+    stand();
+    if (ControlExit_Flag)
+    {
+        vTaskResume(BLEServer_TaskHandle);
+    }
+    vTaskDelete(NULL);
+}
+void car()
+{
+
+    for (uint8_t flag = 0; flag < 4; flag++)
+    {
+        if (flag == 0)
+        {
+            for (size_t i = 0; i < AddedNumofLeg; i++)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+                switch (i)
+                {
+                case 0:
+                    TargetLeg->LegSetAngle(defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle, 1000);
+                    break;
+                case 1:
+                    TargetLeg->LegSetAngle(defaultLeg2HipAngle, defaultLeg2KneeAngle, defaultLeg2AnkleAngle, 1000);
+                    break;
+                case 2:
+                    TargetLeg->LegSetAngle(defaultLeg3HipAngle, defaultLeg3KneeAngle, defaultLeg3AnkleAngle, 1000);
+                    break;
+                case 3:
+                    TargetLeg->LegSetAngle(defaultLeg4HipAngle, defaultLeg4KneeAngle, defaultLeg4AnkleAngle, 1000);
+                    break;
+
+                case 4:
+                    TargetLeg->LegSetAngle(defaultLeg5HipAngle, defaultLeg5KneeAngle, defaultLeg5AnkleAngle, 1000);
+                    break;
+                case 5:
+                    TargetLeg->LegSetAngle(defaultLeg6HipAngle, defaultLeg6KneeAngle, defaultLeg6AnkleAngle, 1000);
+                    break;
+                default:
+                    break;
+                }
+            }
+            // vTaskDelay(500);
+        }
+        if (flag == 1)
+        {
+            for (size_t i = 0; i < AddedNumofLeg; i++)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+                switch (i)
+                {
+                case 0:
+                    TargetLeg->LegSetAngle(-45 + defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle, 1000);
+                    break;
+                case 1:
+                    TargetLeg->LegSetAngle(0 + defaultLeg2HipAngle, defaultLeg2KneeAngle, defaultLeg2AnkleAngle, 1000);
+                    break;
+                case 2:
+                    TargetLeg->LegSetAngle(45 + defaultLeg3HipAngle, defaultLeg3KneeAngle, defaultLeg3AnkleAngle, 1000);
+                    break;
+                case 3:
+                    TargetLeg->LegSetAngle(-45 + defaultLeg4HipAngle, defaultLeg4KneeAngle, defaultLeg4AnkleAngle, 1000);
+                    break;
+
+                case 4:
+                    TargetLeg->LegSetAngle(0 + defaultLeg5HipAngle, defaultLeg5KneeAngle, defaultLeg5AnkleAngle, 1000);
+                    break;
+                case 5:
+                    TargetLeg->LegSetAngle(45 + defaultLeg6HipAngle, defaultLeg6KneeAngle, defaultLeg6AnkleAngle, 1000);
+                    break;
+                default:
+                    break;
+                }
+            }
+            // vTaskDelay(500);
+        }
+        if (flag == 2)
+        {
+            for (size_t i = 0; i < AddedNumofLeg; i++)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+                switch (i)
+                {
+                case 0:
+                    TargetLeg->LegSetAngle(-45 + defaultLeg1HipAngle, -55 + defaultLeg1KneeAngle, -35 + defaultLeg1AnkleAngle, 2000);
+                    break;
+                case 1:
+                    TargetLeg->LegSetAngle(0 + defaultLeg2HipAngle, -35 + defaultLeg2KneeAngle, 50 + defaultLeg2AnkleAngle, 2000);
+                    break;
+                case 2:
+                    TargetLeg->LegSetAngle(45 + defaultLeg3HipAngle, -55 + defaultLeg3KneeAngle, -35 + defaultLeg3AnkleAngle, 2000);
+                    break;
+                case 3:
+                    TargetLeg->LegSetAngle(-45 + defaultLeg4HipAngle, -55 + defaultLeg4KneeAngle, -35 + defaultLeg4AnkleAngle, 2000);
+                    break;
+
+                case 4:
+                    TargetLeg->LegSetAngle(0 + defaultLeg5HipAngle, -35 + defaultLeg5KneeAngle, 50 + defaultLeg5AnkleAngle, 2000);
+                    break;
+                case 5:
+                    TargetLeg->LegSetAngle(45 + defaultLeg6HipAngle, -55 + defaultLeg6KneeAngle, -35 + defaultLeg6AnkleAngle, 2000);
+                    break;
+                default:
+                    break;
+                }
+            }
+            // vTaskDelay(500);
+        }
+        if (flag == 3)
+        {
+
+            for (size_t i = 0; i < AddedNumofLeg; i++)
+            {
+                LegConfig *TargetLeg;
+                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+                switch (i)
+                {
+                case 0:
+                    TargetLeg->LegSetAngle(-45 + defaultLeg1HipAngle, -65 + defaultLeg1KneeAngle, 30 + defaultLeg1AnkleAngle, 1000);
+                    break;
+                case 1:
+                    TargetLeg->LegSetAngle(0 + defaultLeg2HipAngle, -65 + defaultLeg2KneeAngle, 25 + defaultLeg2AnkleAngle, 1000);
+                    break;
+                case 2:
+                    TargetLeg->LegSetAngle(45 + defaultLeg3HipAngle, -65 + defaultLeg3KneeAngle, 30 + defaultLeg3AnkleAngle, 1000);
+                    break;
+                case 3:
+                    TargetLeg->LegSetAngle(-45 + defaultLeg4HipAngle, -65 + defaultLeg4KneeAngle, 30 + defaultLeg4AnkleAngle, 1000);
+                    break;
+
+                case 4:
+                    TargetLeg->LegSetAngle(0 + defaultLeg5HipAngle, -65 + defaultLeg5KneeAngle, 25 + defaultLeg5AnkleAngle, 1000);
+                    break;
+                case 5:
+                    TargetLeg->LegSetAngle(45 + defaultLeg6HipAngle, -65 + defaultLeg6KneeAngle, 30 + defaultLeg6AnkleAngle, 1000);
+                    break;
+                default:
+                    break;
+                }
+            }
+        }
+    }
+    ControlExit_Flag = true;
+}
+void car_Task(void *pvParameters)
+{
+
+    car();
+    if (ControlExit_Flag = true)
+    {
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
+    }
+    vTaskDelete(NULL);
+}
+FSUS_SERVO_ANGLE_T angle_group1[4][3] = {{45, 0, 0},
+                                         {45, 35, 15},
+                                         {45, -65, 30},
+                                         {-45, -65, 30}};
+FSUS_SERVO_ANGLE_T angle_group2[4][3] = {{0, 0, 0},
+                                         {0, 35, 30},
+                                         {0, 65, 50},
+                                         {0, 65, 50}};
+FSUS_SERVO_ANGLE_T angle_group3[4][3] = {{-30, 0, 0},
+                                         {-30, 35, 15},
+                                         {-30, -65, 30},
+                                         {45, -65, 30}};
+void car2()
+{
+    for (int j = 0; j < 4; j++)
+    {
+        for (size_t i = 0; i < AddedNumofLeg; i++)
+        {
+            LegConfig *TargetLeg;
+            xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+            switch (i)
+            {
+            case 0:
+                TargetLeg->LegSetAngle(angle_group1[j][0] + defaultLeg1HipAngle, angle_group1[j][1] + defaultLeg1KneeAngle, angle_group1[j][2] + defaultLeg1AnkleAngle, 1000);
+                break;
+            case 1:
+                TargetLeg->LegSetAngle(angle_group2[j][0] + defaultLeg2HipAngle, angle_group2[j][1] + defaultLeg2KneeAngle, angle_group2[j][2] + defaultLeg2AnkleAngle, 1000);
+                break;
+            case 2:
+                TargetLeg->LegSetAngle(angle_group3[j][0] + defaultLeg3HipAngle, angle_group3[j][1] + defaultLeg3KneeAngle, angle_group3[j][2] + defaultLeg3AnkleAngle, 1000);
+                break;
+            case 3:
+                TargetLeg->LegSetAngle(angle_group1[j][0] + defaultLeg4HipAngle, angle_group1[j][1] + defaultLeg4KneeAngle, angle_group1[j][2] + defaultLeg4AnkleAngle, 1000);
+                break;
+
+            case 4:
+                TargetLeg->LegSetAngle(angle_group2[j][0] + defaultLeg5HipAngle, angle_group2[j][1] + defaultLeg5KneeAngle, angle_group2[j][2] + defaultLeg5AnkleAngle, 1000);
+                break;
+            case 5:
+                TargetLeg->LegSetAngle(angle_group3[j][0] + defaultLeg6HipAngle, angle_group3[j][1] + defaultLeg6KneeAngle, angle_group1[j][2] + defaultLeg6AnkleAngle, 1000);
+                break;
+            default:
+                break;
+            }
+        }
+        vTaskDelay(500);
+    }
+    ControlExit_Flag = true;
+}
+void car2_Task(void *pvParameters)
+{
+    car2();
+    if (ControlExit_Flag)
+    {
+        Serial.println("[ControlExit]Control_Task is Over");
+        vTaskResume(BLEServer_TaskHandle);
+        ControlExit_Flag = false;
+    }
+    vTaskDelete(NULL);
+}
 void LegAngleQuery_Task(void *pvParameters)
 {
     TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象

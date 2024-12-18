@@ -138,110 +138,146 @@ void Robot::MoveBody(float x, float y, float z)
         }
     }
 }
-void car()
-{
+// void car()
+// {
 
-    for (size_t i = 0; i < AddedNumofLeg; i++)
-    {
-        LegConfig *TargetLeg;
-        xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-        switch (i)
-        {
-        case 0:
-            TargetLeg->LegSetAngle(-45 + defaultLeg1HipAngle, -65 + defaultLeg1KneeAngle, 45 + defaultLeg1AnkleAngle, 2000);
-            break;
-        case 1:
-            TargetLeg->LegSetAngle(0 + defaultLeg2HipAngle, -65 + defaultLeg2KneeAngle, 45 + defaultLeg2AnkleAngle, 2000);
-            break;
-        case 2:
-            TargetLeg->LegSetAngle(45 + defaultLeg3HipAngle, -65 + defaultLeg3KneeAngle, 45 + defaultLeg3AnkleAngle, 2000);
-            break;
-        case 3:
-            TargetLeg->LegSetAngle(-45 + defaultLeg4HipAngle, -65 + defaultLeg4KneeAngle, 35 + defaultLeg4AnkleAngle, 2000);
-            break;
+//     for (uint8_t flag = 0; flag < 4; flag++)
+//     {
+//         if (flag == 0)
+//         {
+//             for (size_t i = 0; i < AddedNumofLeg; i++)
+//             {
+//                 LegConfig *TargetLeg;
+//                 xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+//                 switch (i)
+//                 {
+//                 case 0:
+//                     TargetLeg->LegSetAngle(defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle, 1000);
+//                     break;
+//                 case 1:
+//                     TargetLeg->LegSetAngle(defaultLeg2HipAngle, defaultLeg2KneeAngle, defaultLeg2AnkleAngle, 1000);
+//                     break;
+//                 case 2:
+//                     TargetLeg->LegSetAngle(defaultLeg3HipAngle, defaultLeg3KneeAngle, defaultLeg3AnkleAngle, 1000);
+//                     break;
+//                 case 3:
+//                     TargetLeg->LegSetAngle(defaultLeg4HipAngle, defaultLeg4KneeAngle, defaultLeg4AnkleAngle, 1000);
+//                     break;
 
-        case 4:
-            TargetLeg->LegSetAngle(0 + defaultLeg5HipAngle, -65 + defaultLeg5KneeAngle, 45 + defaultLeg5AnkleAngle, 2000);
-            break;
-        case 5:
-            TargetLeg->LegSetAngle(45 + defaultLeg6HipAngle, -65 + defaultLeg6KneeAngle, 45 + defaultLeg6AnkleAngle, 2000);
-            break;
-        default:
-            break;
-        }
-    }
-}
-void stand()
-{
+//                 case 4:
+//                     TargetLeg->LegSetAngle(defaultLeg5HipAngle, defaultLeg5KneeAngle, defaultLeg5AnkleAngle, 1000);
+//                     break;
+//                 case 5:
+//                     TargetLeg->LegSetAngle(defaultLeg6HipAngle, defaultLeg6KneeAngle, defaultLeg6AnkleAngle, 1000);
+//                     break;
+//                 default:
+//                     break;
+//                 }
+//             }
+//             // vTaskDelay(500);
+//         }
+//         if (flag == 1)
+//         {
+//             for (size_t i = 0; i < AddedNumofLeg; i++)
+//             {
+//                 LegConfig *TargetLeg;
+//                 xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+//                 switch (i)
+//                 {
+//                 case 0:
+//                     TargetLeg->LegSetAngle(-45 + defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle, 1000);
+//                     break;
+//                 case 1:
+//                     TargetLeg->LegSetAngle(0 + defaultLeg2HipAngle, defaultLeg2KneeAngle, defaultLeg2AnkleAngle, 1000);
+//                     break;
+//                 case 2:
+//                     TargetLeg->LegSetAngle(45 + defaultLeg3HipAngle, defaultLeg3KneeAngle, defaultLeg3AnkleAngle, 1000);
+//                     break;
+//                 case 3:
+//                     TargetLeg->LegSetAngle(-45 + defaultLeg4HipAngle, defaultLeg4KneeAngle, defaultLeg4AnkleAngle, 1000);
+//                     break;
 
-    for (uint8_t j = 0; j < 2; j++)
-    {
-        if (j == 0)
-        {
-            for (size_t i = 0; i < AddedNumofLeg; i++)
-            {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                switch (i)
-                {
-                case 0:
-                    TargetLeg->LegSetAngle(defaultLeg1HipAngle, 60 + defaultLeg1KneeAngle, -30 + defaultLeg1AnkleAngle, 2000);
-                    break;
-                case 1:
-                    TargetLeg->LegSetAngle(defaultLeg2HipAngle, 60 + defaultLeg2KneeAngle, -30 + defaultLeg2AnkleAngle, 2000);
-                    break;
-                case 2:
-                    TargetLeg->LegSetAngle(defaultLeg3HipAngle, 60 + defaultLeg3KneeAngle, -30 + defaultLeg3AnkleAngle, 2000);
-                    break;
-                case 3:
-                    TargetLeg->LegSetAngle(defaultLeg4HipAngle, 60 + defaultLeg4KneeAngle, -30 + defaultLeg4AnkleAngle, 2000);
-                    break;
+//                 case 4:
+//                     TargetLeg->LegSetAngle(0 + defaultLeg5HipAngle, defaultLeg5KneeAngle, defaultLeg5AnkleAngle, 1000);
+//                     break;
+//                 case 5:
+//                     TargetLeg->LegSetAngle(45 + defaultLeg6HipAngle, defaultLeg6KneeAngle, defaultLeg6AnkleAngle, 1000);
+//                     break;
+//                 default:
+//                     break;
+//                 }
+//             }
+//             // vTaskDelay(500);
+//         }
+//         if (flag == 2)
+//         {
+//             for (size_t i = 0; i < AddedNumofLeg; i++)
+//             {
+//                 LegConfig *TargetLeg;
+//                 xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+//                 switch (i)
+//                 {
+//                 case 0:
+//                     TargetLeg->LegSetAngle(-45 + defaultLeg1HipAngle, -55 + defaultLeg1KneeAngle, -35 + defaultLeg1AnkleAngle, 2000);
+//                     break;
+//                 case 1:
+//                     TargetLeg->LegSetAngle(0 + defaultLeg2HipAngle, -35 + defaultLeg2KneeAngle, 50 + defaultLeg2AnkleAngle, 2000);
+//                     break;
+//                 case 2:
+//                     TargetLeg->LegSetAngle(45 + defaultLeg3HipAngle, -55 + defaultLeg3KneeAngle, -35 + defaultLeg3AnkleAngle, 2000);
+//                     break;
+//                 case 3:
+//                     TargetLeg->LegSetAngle(-45 + defaultLeg4HipAngle, -55 + defaultLeg4KneeAngle, -35 + defaultLeg4AnkleAngle, 2000);
+//                     break;
 
-                case 4:
-                    TargetLeg->LegSetAngle(defaultLeg5HipAngle, 60 + defaultLeg5KneeAngle, -30 + defaultLeg5AnkleAngle, 2000);
-                    break;
-                case 5:
-                    TargetLeg->LegSetAngle(defaultLeg6HipAngle, 60 + defaultLeg6KneeAngle, -30 + defaultLeg6AnkleAngle, 2000);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-        else
-        {
-            for (size_t i = 0; i < AddedNumofLeg; i++)
-            {
-                LegConfig *TargetLeg;
-                xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
-                switch (i)
-                {
-                case 0:
-                    TargetLeg->LegSetAngle(defaultLeg1HipAngle, defaultLeg1KneeAngle, defaultLeg1AnkleAngle, 2000);
-                    break;
-                case 1:
-                    TargetLeg->LegSetAngle(defaultLeg2HipAngle, defaultLeg2KneeAngle, defaultLeg2AnkleAngle, 2000);
-                    break;
-                case 2:
-                    TargetLeg->LegSetAngle(defaultLeg3HipAngle, defaultLeg3KneeAngle, defaultLeg3AnkleAngle, 2000);
-                    break;
-                case 3:
-                    TargetLeg->LegSetAngle(defaultLeg4HipAngle, defaultLeg4KneeAngle, defaultLeg4AnkleAngle, 2000);
-                    break;
+//                 case 4:
+//                     TargetLeg->LegSetAngle(0 + defaultLeg5HipAngle, -35 + defaultLeg5KneeAngle, 50 + defaultLeg5AnkleAngle, 2000);
+//                     break;
+//                 case 5:
+//                     TargetLeg->LegSetAngle(45 + defaultLeg6HipAngle, -55 + defaultLeg6KneeAngle, -35 + defaultLeg6AnkleAngle, 2000);
+//                     break;
+//                 default:
+//                     break;
+//                 }
+//             }
+//             // vTaskDelay(500);
+//         }
+//         if (flag == 3)
+//         {
 
-                case 4:
-                    TargetLeg->LegSetAngle(defaultLeg5HipAngle, defaultLeg5KneeAngle, defaultLeg4AnkleAngle, 2000);
-                    break;
-                case 5:
-                    TargetLeg->LegSetAngle(defaultLeg6HipAngle, defaultLeg6KneeAngle, defaultLeg6AnkleAngle, 2000);
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-    }
-}
+//             for (size_t i = 0; i < AddedNumofLeg; i++)
+//             {
+//                 LegConfig *TargetLeg;
+//                 xQueuePeek(LegQueue[i], &TargetLeg, portMAX_DELAY);
+//                 switch (i)
+//                 {
+//                 case 0:
+//                     TargetLeg->LegSetAngle(-45 + defaultLeg1HipAngle, -65 + defaultLeg1KneeAngle, 30 + defaultLeg1AnkleAngle, 1000);
+//                     break;
+//                 case 1:
+//                     TargetLeg->LegSetAngle(0 + defaultLeg2HipAngle, -65 + defaultLeg2KneeAngle, 25 + defaultLeg2AnkleAngle, 1000);
+//                     break;
+//                 case 2:
+//                     TargetLeg->LegSetAngle(45 + defaultLeg3HipAngle, -65 + defaultLeg3KneeAngle, 30 + defaultLeg3AnkleAngle, 1000);
+//                     break;
+//                 case 3:
+//                     TargetLeg->LegSetAngle(-45 + defaultLeg4HipAngle, -65 + defaultLeg4KneeAngle, 30 + defaultLeg4AnkleAngle, 1000);
+//                     break;
+
+//                 case 4:
+//                     TargetLeg->LegSetAngle(0 + defaultLeg5HipAngle, -65 + defaultLeg5KneeAngle, 25 + defaultLeg5AnkleAngle, 1000);
+//                     break;
+//                 case 5:
+//                     TargetLeg->LegSetAngle(45 + defaultLeg6HipAngle, -65 + defaultLeg6KneeAngle, 30 + defaultLeg6AnkleAngle, 1000);
+//                     break;
+//                 default:
+//                     break;
+//                 }
+//             }
+//         }
+//     }
+// }
+
 void RobotInit_Task(void *pvParameters)
 {
     TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
@@ -257,36 +293,10 @@ void RobotInit_Task(void *pvParameters)
 void RobotPos_Task(void *pvParameters)
 {
     TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
-    // Target->TCP.println("[RobotPos]set all leg to the position of the robot.");
-    // Target->TCP.println("[RobotPos]Please enter PosSerial Number of the Leg you want to Moving,default is 0.");
-    // while (Target->ReceiveData == "")
-    //     ;
-    // u8_t PosSerial = Target->ReceiveData.toInt();
-    // robot.SetPos(defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10], defaultPosition[10]);
-    delay(servoDefaultTime);
+
     vTaskDelete(NULL);
 }
-void RobotPoscar_Task(void *pvParameters)
-{
-    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
-    Target->TCP.println("[RobotPosDown]set all leg to the position of the robot.");
-    // Target->TCP.println("[RobotPosDown]Please enter PosSerial Number of the Leg you want to Moving,default is 0.");
-    // while (Target->ReceiveData == "")
-    //     ;
-    // p1 = Position(128.12, 0, -200.9);
-    // p2 = Position(68.12, 0, -160.9);
-    // p3(-20.01, 0, -63.66);
-    car();
-    Target->ReceiveData == "";
-    vTaskDelete(NULL);
-}
-void RobotPosStand_Task(void *pvParameters)
-{
-    TCPConfig *Target = (TCPConfig *)pvParameters; // 接收对应LegConfig对象
-    Target->TCP.println("[RobotPosDown]set all leg to the position of the robot.");
-    stand();
-    Target->ReceiveData == "";
-}
+
 void RobotChangePos_Task(void *pvParameters)
 {
     while (true)
